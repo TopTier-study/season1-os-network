@@ -1,15 +1,38 @@
 ## WEEK 2 — 스레드 & CPU 자원 분배
 
 ### 📖 학습 키워드
-1. Race Condition
-   * 발생 조건
-   * 위험성
-2. Critical Section
-   * Mutual Exclusion
-   * 기본 조건
-3. 동기화 도구
-   * Mutex
-   * Semaphore
+
+1. 스레드 개념
+   * 등장 배경
+   * 동시성 vs 병렬성
+   * 멀티코어와 스레드
+
+3. 스레드 vs 프로세스
+   * 주소 공간
+   * 자원 공유 범위
+   * 구조적 차이(PCB / TCB)
+   * 장단점
+
+4. 실행 비용
+   * 스레드 생성 비용
+   * 컨텍스트 스위칭
+   * 프로세스 vs 스레드 전환 비용
+
+5. CPU 스케줄링
+   * 스케줄러 역할
+   * 선점 / 비선점
+   * 공정성과 자원 활용
+
+6. 스케줄링 알고리즘
+   * 알고리즘 종류별 특징, trade-off
+   * 기아 현상(Starvation)
+
+7. 성능 지표
+   * Throughput
+   * Latency
+   * Response Time
+   * CPU Utilization
+
 
 ### 📢 발표 주제
 #### ① 스레드 등장 배경
