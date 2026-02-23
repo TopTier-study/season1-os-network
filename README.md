@@ -43,12 +43,12 @@
 
 ## 📖 스터디 규칙 및 운영 가이드
 
-🔗 [그라운드 룰](../../wiki/Ground-Rules)  
-🔗 [데일리 공유 가이드](../../wiki/Daily-Sharing)  
-🔗 [발표 가이드](../../wiki/Presentation-Guide)  
-🔗 [CS 스터디 가이드](../../wiki/CS-Template)  
-🔗 [WWDC 스터디 가이드](../../wiki/WWDC-Guide)  
-🔗 [AI 활용 경험 공유 가이드](../../wiki/AI-Template)
+🔗 [그라운드 룰](https://github.com/TopTier-study/season1-os-network/wiki/Ground-Rules)  
+🔗 [데일리 공유 가이드](https://github.com/TopTier-study/season1-os-network/wiki/Daily-Sharing-Guide)  
+🔗 [발표 가이드](https://github.com/TopTier-study/season1-os-network/wiki/Presentation-Guide)  
+🔗 [CS 스터디 가이드](https://github.com/TopTier-study/season1-os-network/wiki/CS-Study-Guide)  
+🔗 [WWDC 스터디 가이드](https://github.com/TopTier-study/season1-os-network/wiki/WWDC-Guide)  
+🔗 [AI 활용 경험 공유 가이드](https://github.com/TopTier-study/season1-os-network/wiki/AI-Sharing-Guide)
 
 <br>
 
