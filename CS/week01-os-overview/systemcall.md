@@ -81,6 +81,7 @@ iOS의 커널(XNU)은 **Mach**라는 기초 위에 **BSD**라는 표준 운영�
 - 증상:
 
 ### 4️⃣ 추가 학습: Apple’s Darwin OS and XNU Kernel Deep Dive (✍️ 수정 예정)
+[커널 구조 이미지 링크](https://developer.apple.com/library/archive/documentation/Darwin/Conceptual/KernelProgramming/art/osxarchitecture.gif)
 
 ### 5️⃣ 추가 학습: ARM 호출 규약 (svc 확인하기)
 > 아래의 내용은 함수 호출 시 어떤 일이 일어나는지 추가 학습한 내용으로, 주요 주제에서 확장된 내용입니다.  
