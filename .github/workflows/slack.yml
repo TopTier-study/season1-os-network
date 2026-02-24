@@ -1,0 +1,16 @@
+name: Slack Daily Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Script
+        run: python slack_daily.py
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
