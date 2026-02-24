@@ -17,14 +17,14 @@
 Swift 코드 -> Foundation 프레임워크 -> **💡 시스템 콜** -> 하드웨어 (파일 읽기, 네트워크 전송 등)
 
 ### 2️⃣ 시스템 호출 정리
-#### 시스템 호출과 함수 호출의 관계
+#### 🔍 시스템 호출과 함수 호출의 관계
 **시스템 호출은 사용자 모드에서 시작되지만, CPU의 트랩 명령어를 통해 커널 모드로 전환된 뒤 커널 내부 코드가 실행됩니다.**  
 반면, **일반 함수 호출은 사용자 모드를 유지한 채 실행됩니다.**  
 높은 권한이 필요한 작업은 시스템 호출을 통해서만 수행되며, 이를 통해 일반 애플리케이션이 하드웨어에 직접 접근하는 상황을 방지합니다.  
 함수 호출 또한 내부적으로 시스템 호출을 유발할 수 있습니다. (e.g. `print(“”)`)  
 라이브러리 함수는 **표준화된 인터페이스를 제공하므로 이식성이 높지만**, 실제 내부 구현은 운영체제에 의존합니다. (e.g. C의 `printf()`는 동일한 방식으로 사용 가능하지만 내부적으로는 OS의 시스템 호출을 사용함)
 
-#### 예시 살펴보기: Swift의 print()에서 커널까지의 여행
+#### 🔍 예시 살펴보기: Swift의 print()에서 커널까지의 여행
 1. **Swift 코드**(`print()`): 사람이 사용하는 고수준 함수
 2. **Swift 표준 라이브러리**
    - Swift - Misc (cf. `print(“”)`를 `cmd+클릭`해 확인 가능)
@@ -36,16 +36,32 @@ Swift 코드 -> Foundation 프레임워크 -> **💡 시스템 콜** -> 하드�
 5. **CPU 모드 전환**: 사용자 모드 -> 커널 모드
 6. **XNU 커널에서 하드웨어 및 파일 시스템 처리**
 
-#### 시스템 호출의 비용 산정
+#### 🔍 시스템 호출의 비용 산정
 - 사용자 모드와 커널 모드 간의 전환
 - 레지스터 저장/복원
 - 커널 코드 실행 (요청한 작업 수행)
 
-#### 시스템 호출의 종류 (✍️ 수정 예정)
-BSD syscall은 파일/프로세스 같은 **UNIX 전통 기능**, Mach Trap은 메모리/IPC/스레드 같은 **Apple 고유 저수준 기능**을 담당합니다.
-[XNU Github - BSD syscall 확인](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/kern/syscalls.master)
-[XNU Github - Mach trap 확인](https://github.com/apple-oss-distributions/xnu/blob/main/osfmk/kern/syscall_sw.c)
+#### 🔍 시스템 호출의 종류
+> 시스템 호출의 종류가 **프로세스 제어**/**파일 조작**/**장치 관리**/**정보 유지**/**통신**/**보호** 로 구성되어있다는 점을 확인했습니다.  
+> XNU를 살펴보며 Mach와 BSD가 존재한다는 점을 확인했고, 각 레이어에 어떤 역할이 있는지까지 학습해봤습니다.  
+> 우리가 사용하는 고수준 API가 최종적으로는 **BSD의 서비스 정책**이나 **Mach의 하드웨어 추상화 메커니즘**을 실행하는 **시스템 호출**로 연결되어 커널의 실제 동작을 유발합니다.  
+> Darwin, XNU, Mach와 BSD에 대한 추가 학습 내용은 `4️⃣ 추가학습`을 참고해주시길 바랍니다.  
 
+iOS의 커널(XNU)은 **Mach**라는 기초 위에 **BSD**라는 표준 운영체제 환경을 얹은 **하이브리드 구조**이기 때문에 시스템 호출이 이원화되어 있습니다. (macOS 또한 동일합니다.). 
+* Mach (메커니즘 담당): 하드웨어와 가장 가까운 층에서 CPU와 메모리라는 자원을 어떻게 안전하게 나눌 것인가라는 기초적인 규칙을 만듭니다.
+* BSD (정책 및 인터페이스 담당): Mach가 만든 기초 자원 위에 사용자가 파일, 네트워크, 프로세스를 어떻게 편리하게 쓸 것인가라는 구체적인 기능과 산업 표준(POSIX) API를 제공합니다.  
+
+**자원을 실제로 움직이는 하드웨어 제어권**은 **Mach**가 쥐고 있고, **우리가 흔히 쓰는 파일 생성, 네트워크 연결 등 프로그래밍 규격**은 **BSD**가 담당한다고 이해하면 됩니다.  
+
+| **구분** | **BSD** | **Mach** |
+|:-:|:-:|:-:|
+| 프로세스 | 프로세스 ID, 시그널 | 스케줄링, CPU 할당 |
+| 메모리 | - | 가상 메모리, 메모리 보호, 페이저 |
+| 파일시스템 | 파일시스템 전반 | - |
+| 네트워킹 | TCP/IP 소켓 API, 보안 | - |
+| IPC | - | 메시지 패싱, RPC |
+| 스레드 | pthreads (POSIX) | SMP 스케줄러, 실시간 서비스 |
+| 보안 | UNIX 보안 모델, syscall | - |
 
 ### 3️⃣ iOS에서 발생할 수 있는 상황 (✍️ 수정 예정)
 #### [1] FileManager로 파일 읽기
@@ -66,6 +82,97 @@ BSD syscall은 파일/프로세스 같은 **UNIX 전통 기능**, Mach Trap은 �
 
 ### 4️⃣ 추가 학습: Apple’s Darwin OS and XNU Kernel Deep Dive (✍️ 수정 예정)
 
+### 5️⃣ 추가 학습: ARM 호출 규약 (svc 확인하기)
+> 아래의 내용은 함수 호출 시 어떤 일이 일어나는지 추가 학습한 내용으로, 주요 주제에서 확장된 내용입니다.  
+
+**주요 주제인 시스템 콜과 연관된 점**은 어떤 호출이든 아래 규약을 따르지만, **시스템 콜일 경우 `svc #0x80`이라는 커널 모드 전환 명령어가 추가된다는 점**입니다.  
+**Xcode에서 디버깅 중 나오는 어셈블리 코드에서 해당 명령어가 확인될 경우 시스템 호출이 동작한다는 걸 확인할 수 있습니다.**
+```
+    0x100000e9c <+80>:  mov    x16, #0x4                 ; =4 
+    0x100000ea0 <+84>:  svc    #0x80    <- ⭐️ 여기!
+    0x100000ea4 <+88>:  ldur   x9, [x29, #-0x8]
+```
+
+#### 🔍 ARM64 호출 규약 전체 정리: 함수 호출 시 발생하는 내부 동작
+**1\. 인자 전달**
+```
+x0~x7 : 인자 8개까지 레지스터로 전달 (빠름)
+스택   : 9번째부터는 메모리로 전달 (느림)
+```
+**2\. 반환값**
+```
+작은 값 (정수 등)  → x0에 넣어서 반환
+큰 값 (구조체 등)  → caller가 x8에 버퍼 주소를 넘기고,
+                     callee가 거기에 결과를 써넣음
+```
+**3\. 스택 프레임**
+함수가 호출될 때마다 스택에 프레임이 하나 생기고, 이런 패턴을 따릅니다:
+```
+; 프롤로그 (함수 시작)
+sub sp, sp, #N              ← 스택 공간 확보
+stp x29, x30, [sp, #offset] ← FP(프레임포인터)와 LR(리턴주소) 저장
+
+; 에필로그 (함수 끝)
+ldp x29, x30, [sp, #offset] ← FP와 LR 복원
+add sp, sp, #N              ← 스택 해제
+ret                          ← x30(LR)으로 점프하여 caller로 돌아감
+```
+**4\. 프레임 체인**
+함수가 호출된 곳으로 돌아갈 주소가 덮어씌워지는 것을 방지하기 위해 **이전 FP(x29)**를 스택에 백업합니다.  
+그 백업들이 연결되며 체인이 만들어진다고 이해했습니다.  
+스택에 저장되면서 연결 리스트가 만들어집니다:
+```
+frame_c의 x29 → frame_b의 x29 → frame_a의 x29 → ...
+```
+**5\. 레지스터 보존 규칙**
+누가 저장할지를 미리 약속해 불필요한 저장/복원을 없애기 위한 규칙입니다.  
+> Caller와 Callee의 담당 구간을 각각 나눈 이유가 궁금해 아래 내용을 추가로 찾아봤습니다.
+
+**x0~x15**
+- 인자로 넘기고, 반환값 받고, 임시 계산에 쓰는 값들입니다.
+- 함수 호출 후 값이 바뀌어도 되는 임시용이라 caller가 필요할 때만 저장합니다.  
+
+**x19~x28**
+- 루프 카운터, 누적 결과처럼 오래 들고 있어야 하는 값들입니다.
+- 여러 함수 호출을 넘어서도 살아있어야 하는 값이라 callee가 쓸 때만 저장하고 반드시 복원합니다.
+
+만약 caller와 callee가 담당하는 구간을 나누지 않았다면, 실제로 필요하지 않은 저장이 많이 발생합니다.
+```
+Callee-saved (x19~x28) : 호출된 함수가 책임
+  → 사용 전 stp로 저장, 리턴 전 ldp로 복원
+  → caller는 호출 전후로 값이 안 바뀐다고 믿을 수 있음
+
+Caller-saved (x0~x15)  : 호출한 쪽이 책임
+  → 함수 호출하면 바뀔 수 있음
+  → 필요하면 caller가 직접 스택에 백업
+```
+**6\. 특수 레지스터 요약**
+함수 호출 직전에는 `x0`가 첫 번째 인자로 사용되며, 반환되기 직전에는 반환 값으로 사용됩니다.
+```
+x0~x7   : 인자 전달 + x0은 반환값
+x8      : 큰 구조체 반환용 버퍼 주소
+x9~x15  : 임시 (caller-saved)
+x19~x28 : 보존 (callee-saved)
+x29 (FP): 프레임 포인터 (프레임 체인 구성)
+x30 (LR): 리턴 주소 (ret 시 여기로 점프)
+sp      : 스택 포인터
+```
+**7\. Swift 추가 규칙**
+Swift 메서드의 self는 인자 레지스터(`x0~x7`)가 아닌 `x20`에 별도로 전달됩니다.  
+이는 기존 Objective-C가 `x0`에 넣는 방식과는 다릅니다.  
+레지스터 보존 규칙에 따라 `x20`은 Callee-saved 레지스터이기 때문에, 메서드 내부에서 함수를 아무리 호출해도 self가 자동으로 보존됩니다.  
+인자 레지스터를 self 없이 온전히 파라미터 전용으로 쓸 수 있다는 장점도 있다.  
+> Caller-saved여도 똑같이 복원되는 것 아닌가 싶어 Claude와 대화를 진행해보고 아래 내용을 확인했습니다.
+
+self를 Callee-saved인 `x20`에 두면, `x20`을 실제로 쓰는 함수만 저장/복원 코드를 생성하면 됩니다.  
+Caller-saved 레지스터에 뒀을 경우 함수 호출 지점마다 저장/복원 코드가 생성되는 것과 비교하면 전체적으로 생성되는 코드량이 줄어듭니다.  
+```
+일반 함수   : C와 동일 (x0~x7로 인자, x0으로 반환)
+메서드의 self : x20에 배치 (Apple ABI 확장)
+```
+
+#### 💡 한 줄 요약: 함수 호출 = 인자를 x0~x7에 넣고, 리턴 주소를 x30에 백업하고, 스택 프레임을 만들고, 끝나면 복원하고 돌아오는 것.
+
 ## 4. 실무 / iOS 연결 지점 (✍️ 수정 예정)
 ### 문제 상황 재현~개선
 
@@ -79,3 +186,8 @@ BSD syscall은 파일/프로세스 같은 **UNIX 전통 기능**, Mach Trap은 �
 [Apple’s Darwin OS and XNU Kernel Deep Dive](https://tansanrao.com/blog/2025/04/xnu-kernel-and-darwin-evolution-and-architecture/)  
 [ARM에서의 Exception Levels와 Security States 이해](https://pyjamacafe.com/posts/arm64-day0-exception-levels/)  
 [라이브러리 함수와 시스템 콜 비교 분석](https://mdesign.tistory.com/entry/Unix-%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC-%ED%95%A8%EC%88%98%EC%99%80-%EC%8B%9C%EC%8A%A4%ED%85%9C-%EC%BD%9C-%EB%B9%84%EA%B5%90%EB%B6%84%EC%84%9D)  
+[x86, x64, x86_64, arm](https://ts2ree.tistory.com/355)  
+[\[Operating System\] \(iOS\) System Call \(시스템콜, 시스템 호출이란?\)](https://didu-story.tistory.com/311)  
+[공식 Kernel Architecture 문서](https://developer.apple.com/library/archive/documentation/Darwin/Conceptual/KernelProgramming/Architecture/Architecture.html)  
+[XNU Github - BSD syscall 확인](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/kern/syscalls.master)
+[XNU Github - Mach trap 확인](https://github.com/apple-oss-distributions/xnu/blob/main/osfmk/kern/syscall_sw.c)
