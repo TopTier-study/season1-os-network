@@ -1,7 +1,9 @@
-name: Slack Daily Test
+name: Slack Daily
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 13 * * 0'
 
 jobs:
   send:
