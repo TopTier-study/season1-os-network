@@ -4,8 +4,8 @@
 
 (이전에 학습한 내용)
 
-- 운영체제의 기본적인 정의와 역할
-- 컴퓨터 시스템의 구성
+- [운영체제의 기본적인 정의와 역할](https://github.com/TopTier-study/season1-os-network/blob/main/CS/week01-os-overview/os-definition-and-role.md)
+- [컴퓨터 시스템의 구성](https://github.com/TopTier-study/season1-os-network/blob/main/CS/week01-os-overview/computer-system-organization.md)
     - 인터럽트 개요, 처리 매커니즘
     - 저장 구조, 입출력 구조
 
