@@ -295,6 +295,79 @@ Program ended with exit code: 0
 
 ![instrument](assets/systemcall/systemcall_6.png)
 
+### 🔍 메인 스레드에서 대용량 파일 I/O 재현 및 개선하기
+
+#### [1] 문제 코드 작성
+
+SwiftUI `body` 안에서 POSIX 시스템 콜을 직접 호출하여 파일을 읽고, PNG 디코딩까지 메인 스레드에서 수행하는 코드를 작성했습니다.
+
+> 아래 두 버전은 내부에서 동일한 시스템 콜을 호출합니다!
+
+```swift
+// 작성한 코드 (POSIX 직접 호출)
+let fd = open(path, O_RDONLY)
+fstat(fd, &statInfo)
+read(fd, buffer, fileSize)
+close(fd)
+let image = UIImage(data: data)
+
+// 실제 개발에서 쓰는 코드 (한 줄)
+let image = UIImage(contentsOfFile: path)
+```
+
+```swift
+// 의도한 문제 상황
+var body: some View {
+    let image = UIImage(contentsOfFile: path)  // ← 메인 스레드에서 동기 I/O
+    Image(uiImage: image!)
+}
+```
+
+#### [2] 문제 코드 Instruments 분석
+
+> System Trace 도구 선택 후 Main Thread, Time Profier, Hangs 부분을 확인해봤습니다.  
+> 화면 스크롤 하는 상황을 재현했습니다. <- **재현 중에도 심각한 버벅임 확인**했습니다.
+
+1️⃣ System Trace - Main Thread
+
+- 아래 시스템 콜의 호출 횟수와 누적 시간을 확인했습니다.
+
+|        시스템 콜        | 횟수  | 누적 시간 |                         의미                         |
+| :---------------------: | :---: | :-------: | :--------------------------------------------------: |
+|    `mach_msg2_trap`     | 1,495 |   5.25s   | Mach 메시지 대기 (런루프가 I/O 끝나길 기다리는 시간) |
+|         `open`          |  55   |  2.22ms   |           파일 열기 - Max 180μs짜리도 있음           |
+|         `read`          |  23   |   317ms   |         파일 읽기 - Avg 8.76ms, Max 38.98ms          |
+|        `lstat64`        |  23   |  1.51ms   |              파일 경로 메타데이터 조회               |
+|      `sys_fstat64`      |  23   |  29.50μs  |                fd 기반 파일 크기 조회                |
+|       `sys_close`       |  29   |   191μs   |                      파일 닫기                       |
+| `mach_vm_allocate_trap` |  53   |  2.06ms   |     메모리 할당 (비트맵 버퍼) - PNG 디코딩할 때      |
+
+![instrument](assets/systemcall/systemcall_7.png)
+
+2️⃣ Time Profiler  
+메인 스레드 8.92초의 시간 분배:
+
+- `libz (inflate)` : 31.8% ← PNG 압축 해제 (zlib)
+- `_platform_memmove` : 23.8% ← 디코딩된 픽셀 데이터 복사
+- `__bzero` : 15.6% ← 비트맵 메모리 초기화  
+  **선택한 기간의 메인 스레드 시간 71.2% (2.84 + 2.13 + 1.40 = 6.37초)가 PNG 디코딩 관련 작업**입니다.  
+  `__bzero` → `_SwiftUIProxyImage prepare` 경로에서 SwiftUI가 `Image(uiImage:)`를 화면에 그리기 위해 `CA::Render::copy_image`를 호출하는데, 이때 4000×4000 비트맵을 또 한 번 복사합니다.  
+  렌더링 파이프라인까지 메인 스레드에서 처리되는 것입니다.
+
+![instrument](assets/systemcall/systemcall_8.png)
+
+3️⃣ Hangs  
+총 16번의 Hang 중 **500ms 이상을 소요하는 Hang이 4회 발생했습니다. (579ms, 1.61s, 1.38s, 1.52s)**  
+1초 이상 앱이 멈추는 문제를 확인했습니다. (실제로도 심각하게 버벅임을 확인했습니다.)
+
+![instrument](assets/systemcall/systemcall_9.png)
+
+**4️⃣ 문제 분석**  
+화면을 스크롤 하면서 **새로운 셀이 나타날 때마다 메인 스레드에서 `open`→`read`→`close`→`디코딩` 작업을 반복하는 것을 확인**했습니다.  
+관련 시스템 콜의 **호출 횟수로 여러 번 반복되는 것을 알 수 있었고**, **디코딩 구간은 메인 스레드를 블로킹 하면서 심각한 버벅임까지 야기**하는 것을 확인했습니다.
+
+#### [3] 개선 및 Instruments 분석 (✍️ 수정 예정)
+
 ## 5. 의문 / 논점 (✍️ 수정 예정)
 
 - 이해가 애매했던 부분
