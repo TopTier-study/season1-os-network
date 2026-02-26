@@ -79,7 +79,6 @@
 **시스템의 원활한 작동을 보장하기 위해 특정 소프트웨어에 의한 보정 조치나 시스템 상태 업데이트가 필요한 조건이나 시스템 이벤트**,  
 곧 현재 실행 중인 프로그램이 일시 중지될 수 있는 모든 이벤트를 의미한다.
 
----
 
 **Synchronous Exception**
 
@@ -450,21 +449,170 @@ Mach 계층 구조에서 수신자를 찾지 못하면, 예외 메시지는 이 
     - **재실행**: 모든 반영이 끝나면 스레드는 대기에서 깨어나 **예외 발생 지점(사고 지점)부터 다시 실행**을 시도하는 유연성을 보여준다.
 - **처리 결과 반환**
     - 위의 RPC 과정을 마친 뒤, 성공 혹은 실패 여부(처리 결과)를 `exception_triage_thread`로 반환한다. 만약 실패(`KERN_FAILURE`)가 반환된다면, 커널은 다음 단계로 넘어가 같은 매커니즘을 실행하거나, 실패 처리하여 프로세스 자원을 회수하고 강제 종료한다.
-
+  
+---
 ### 처리 매커니즘 도식화
 
 <img width="1991" height="1585" alt="image" src="https://github.com/user-attachments/assets/b87f9d87-b768-4c5a-887f-89db3e638756" />
 
+---
+
+### Xcode에서 EXC_BAD_ACCESS 재현해보기
+Swift 런타임 예외 처리를 우회하여 EXC_BAD_ACCESS 예외를 재현하기 위한 코드를 작성했다.
+
+```swift
+// 1.Swift 런타임이 개입하기 전에 잘못된 메모리 접근 발생
+Button("EXC_BAD_ACCESS") {
+	var obj: NSObject? = NSObject()
+
+	// ARC에 영향을 주지 않는 포인터 참조 생성
+	let unmanaged = Unmanaged.passUnretained(obj!)
+	// 객체의 실제 메모리 주소 반환
+	let ptr = unmanaged.toOpaque()
+
+	// 객체 해제
+	obj = nil
+
+	// ptr은 여전히 이미 해제된 메모리의 주소를 가지고 있음 (dangling pointer)
+	// 이미 해제된 객체 주소에 접근해 다시 객체처럼 사용
+	 _ = Unmanaged<NSObject>
+		.fromOpaque(ptr)
+        .takeUnretainedValue()
+}
+```
+
+해당 코드를 실행하면, 아래와 같이 크래시 로그와 어셈블리 코드를 확인할 수 있다.
+
+<img width="1271" height="772" alt="image" src="https://github.com/user-attachments/assets/5ec7d677-eaac-4be6-bfe1-1819aca99df8" />
+
+- EXC_BAD_ACCESS(code=1, address=0x~)에서 code는 발생한 예외의 세부 정보를 의미하는 sub-code를,  
+address는 잘못된 접근이 시도된 메모리 주소 (접근하려던 대상의 메모리 주소)를 의미한다.
+
+- 해당 값은 Mach 예외 처리 매커니즘의 핸들러 내부에서 결정된 값임을 알 수 있다.
+
+<img width="976" height="611" alt="image" src="https://github.com/user-attachments/assets/2570ba7b-1030-4292-8b03-2c159751e129" />
+
+- 어셈블리 코드 상에서는 1521번째 라인의 `mov x19, x0` 명령어에서 크래시가 발생한 것처럼 표시되지만, 해당 명령어는 단순히 레지스터 간 값을 복사하는 연산으로 메모리 접근을 수행하지 않는다. 따라서 이 위치는 실제 fault instruction이 아니다.
+  
+- 실제 실행 흐름을 보면, 직전에 수행된 `blraaz x8` 명령어를 통해 함수 포인터(또는 가상 함수 테이블을 통해 획득한 함수 주소)로 **간접 분기 호출이 이루어지며, 크래시는 이 호출로 진입한 피호출 함수(callee) 내부에서 발생**한다.
+  - `blraaz`는 ARM64e 환경에서 Pointer Authentication을 사용하는 간접 호출 명령어로, 호출 대상 함수 포인터에 대한 인증이 수행된다. 그러나 본 사례에서는 인증 실패로 인한 제어 흐름 예외가 아니라, 정상적으로 호출된 이후 함수 내부에서 발생한 잘못된 메모리 접근이므로 `EXC_BAD_ACCESS`가 보고된다.
+
+- 해당 함수 내부에서 이미 해제되었거나 손상된 객체의 필드를 참조하면서, 접근이 불가능한 메모리 주소인 `0xbeaddeacb…`에 대해 load/store 연산이 수행되었고, 이 시점에 ARM64 CPU에서 Data Abort 예외가 발생한다.
+
+- 이 하드웨어 예외는 커널에 의해 Mach 예외인 `EXC_BAD_ACCESS`로 변환되어 현재 스레드에 전달된다.
+
+- LLDB는 예외가 발생한 정확한 instruction이 아니라, 예외가 전파되어 스레드가 정지한 시점의 프레임을 기준으로 디스어셈블리 위치를 표시한다. 이 때문에 디버거 화면에서는 실제로는 실행되지 않았던 다음 명령어인 `mov x19, x0`이 크래시 라인으로 강조 표시된다.
+
+- 결과적으로, 디스어셈블리에서 강조된 1521번째 라인은 크래시의 직접적인 원인이 되는 명령어가 아니며, 실제 크래시 원인은 `blraaz x8`로 진입한 함수 내부에서 무효한 객체 포인터를 역참조한 데 있음을 알 수 있다.
+
 
 ## 실무 / iOS 연결 지점
 
-### Swift 런타임에서 발생하는 ‘Fatal Error’는 어떻게 처리될까?
+### Swift 런타임에서 발생하는 ‘fatal error’는 어떻게 처리될까?
 
-- 
+위에서는 Swift 런타임을 우회하여 **EXC_BAD_ACCESS** 예외를 재현하였는데, 실제 Swift 코드 레벨에서는 대부분 런타임 검증에 의해 **fatal error** 형태의 크래시를 만나게 된다.
+
+fatal error는 커널이 먼저 감지하는 메모리 오류가 아니라, **Swift 런타임이 의도적으로 CPU의 trap 명령을 실행하여 예외를 발생시키는 방식**이다.
+
+CPU에 trap이 전달되면 흐름은 다음과 같이 이어진다.
+
+```
+Swift runtime
+→ trap 명령어 실행 (brk 등)
+→ CPU synchronous exception 발생
+→ EL0 → EL1 전환
+→ XNU 커널의 exception vector 진입 (Mach 예외 처리 매커니즘 수행)
+→ arm64 exception handler(sleh)
+→ exception_triage()
+→ Mach exception 생성
+→ (디버거가 연결된 경우) 디버거로 전달
+→ (그 외) BSD ux_handler로 전달
+→ SIGTRAP 또는 SIGILL 변환
+→ 프로세스 종료
+```
+
+이 흐름 일부를 LLDB를 통해 직접 확인해볼 수 있었다.
+먼저 LLDB에서 `bt` 명령을 입력해, 프로그램이 중단된 지점의 현재 스레드 콜 스택을 출력한다.
+
+<img width="686" height="128" alt="image" src="https://github.com/user-attachments/assets/0ea28a01-e0f4-41c0-8343-6fa284622588" />
+
+위와 같이 runtime report가 시작된 stack frame 0부터 frame 2까지 예외 관련 흐름이 존재하는 것을 확인할 수 있었다.
+
+이제 내부 호출 시간 순으로 프레임을 살펴보며 **CPU에 trap을 발생시키는 부분인 brk 명령이 존재하는 곳**을 찾아보자.
+
+<img width="711" height="466" alt="image" src="https://github.com/user-attachments/assets/e20fa51d-7ca5-476a-b148-65c5c6c0226d" />
+
+frame 2의 스택 트레이스에서 brk가 실행되는 부분을 찾을 수 있었다. 해당 부분에서 Trap이 발생하고, CPU 동기 예외가 발생한다. 
+EL0(유저 권한)에서는 해당 예외를 처리할 수 없으므로 실행 권한이 EL1(커널 권한)으로 전환되고, XNU 커널의 예외 처리 경로로 진입한다. 
+
+이후 Mach exception 전달 흐름( exception_triage → exception_deliver → thread / task / host → BSD ux_handler )은 EXC_BAD_ACCESS 처리와 동일한 흐름을 따르지만,
+전달되는 예외의 종류는 EXC_BAD_ACCESS가 아니라 **trap에 의해 발생한 EXC_BREAKPOINT(또는 EXC_BAD_INSTRUCTION)** 이다.
+
+
+결론적으로,
+> fatal error는 “잘못된 메모리 접근”으로 인해 커널이 예외를 만들어 주는 것이 아니라,
+> **Swift 런타임이 직접 trap을 발생시켜 커널에 예외 처리를 요청하는 구조**이다.
+
+따라서 흐름의 출발점은 다음과 같이 구분된다.
+
+* **EXC_BAD_ACCESS**
+  → CPU가 메모리 접근 중 fault를 감지
+* **fatal error**
+  → Swift 런타임이 trap 명령을 실행
+
+fatal error와 EXC_BAD_ACCESS는 모두 동기 예외로서 동일한 Mach 예외 전달 흐름을 거치지만,   
+fatal error는 메모리 접근 오류가 아닌 trap 명령에 의해 발생하며, 예외의 원인뿐만 아니라 타입 또한 EXC_BAD_ACCESS와 다르다.
+
+---
+
+**EXC_BAD_ACCESS vs fatal error 예외 처리 방식 비교 표**
+| 구분 | fatalError / precondition / assert 계열 | EXC_BAD_ACCESS |
+| --- | --- | --- |
+| 발생 주체 | Swift 런타임 | CPU + 커널(Mach) |
+| 발생 계층 | 언어 런타임 레벨 | 하드웨어 예외 레벨 |
+| 발생 원인 | 명시적 오류 종료 호출 (fatalError, preconditionFailure 등) | 잘못된 메모리 접근(load/store) |
+| 대표 예 | nil 강제 언래핑 실패, precondition(false) | 해제된 객체 접근, wild pointer, NULL 접근 |
+| 내부 동작 | Swift runtime이 trap(중단)을 발생시킴 | CPU가 Data Abort → 커널이 Mach exception 생성 |
+| 예외 타입 | 보통 EXC_BAD_INSTRUCTION 또는 EXC_BREAKPOINT | EXC_BAD_ACCESS |
+| code 의미 | 구현에 따라 다름(보통 breakpoint / trap 계열) | code=1 → KERN_INVALID_ADDRESS |
+| address 필드 의미 | 의미 없는 경우가 많음(또는 trap 위치와 무관) | 접근 실패한 메모리 주소(fault address) |
+| PC(코드 위치) | fatalError를 호출한 지점 | fault가 발생한 instruction |
+| 메모리 접근과 직접 연관 | ❌ 없음 | ✅ 있음 |
+| 복구 가능성 | 원칙적으로 불가(논리 오류) | 원칙적으로 불가(메모리 오류) |
+| 크래시 성격 | 의도된 프로그램 중단 | 비의도적 메모리 접근 오류 |
+| 디버깅 포인트 | fatalError 호출 스택, 메시지 | fault address, use-after-free 여부 |
+
+
 
 ## 의문 / 논점
+**커널에서 예외 처리 시, 같은 하드웨어 예외(Data Abort)인데, 왜 어떤 경우는 EXC\_BAD\_ACCESS로 앱만 죽고, 어떤 경우는 커널 panic이 되는가?**
 
-- 
+<details>
+<summary>알아보기</summary>
+
+```c
+// 커널 모드에서 해당 예외가 발생했을 경우, 심각한 상태이므로 시스템을 중단함.
+if (!PSR64_IS_USER(get_saved_state_cpsr(ss))) {
+    panic_with_thread_kernel_state("PC alignment exception from kernel.", ss);
+}
+```
+
+위에서 EXC\_BAD\_ACCESS 처리 과정 중, handler 코드 내부에서 예외가 커널에서 발생했을 경우 시스템 자체를 중단시키는 로직을 확인했었는데, 정확히 왜 이 두 케이스를 구분하고, 커널에서 발생했을 경우 시스템을 중단시키는지 궁금했다.
+
+우선 위에서 분석한 `handler_pc_align`(pc가 정렬되지 않은 주소를 가리킬 경우) 핸들러를 기준으로 커널 입장에서 분석해보면,
+
+**유저 모드에서 pc가 정렬되지 않은 주소를 가리킴**
+- 이는 사용자 프로그램(EL0)의 잘못된 실행 상태로 판단할 수 있으며,
+- 커널은 해당 스레드를 대상으로 Mach 예외(EXC\_BAD\_ACCESS)를 생성해 전달하면 된다.
+
+**커널 모드에서 pc가 정렬되지 않은 주소를 가리킴**
+- 이는 커널 코드 자체가 잘못된 분기(target)로 점프했거나,
+- 함수 포인터 손상, 스택 손상, 메모리 오염 등으로 인해 **커널 내부 제어 흐름 무결성이 이미 깨졌음을 의미**한다.
+
+커널은 **자기 자신이 최고 권한 실행 주체이며 상위에 커널의 오류를 처리해줄 수 있는 레이어가 더 이상 존재하지 않기** 때문에  
+XNU는 내부의 제어 흐름 손상으로 인한 더 큰 문제를 막기위해 아예 시스템을 중단시키도록 설계된 것이다.
+
+</details>
 
 ## 관련 링크
 
