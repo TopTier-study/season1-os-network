@@ -28,7 +28,7 @@ CPU는 실행 모드를 하드웨어 수준에서 구분한다. 리눅스에서�
 | Ring 1~2 | (잘 사용 안 함) | 드라이버(일부 구조) | 중간 권한                 |
 | Ring 3   | User Mode       | 일반 애플리케이션   | 제한된 명령어만 실행 가능 |
 
-![alt tex](assets/os-overview/privilegeRing.png)
+<img src="assets/os-overview/privilegeRing.png" width="500">
 
 > 실질적으로 현대 OS는 Ring 0(커널)과 Ring 3(유저)만 사용하는 경우가 대부분이다.
 
@@ -36,7 +36,7 @@ CPU는 실행 모드를 하드웨어 수준에서 구분한다. 리눅스에서�
 
 ex) ring 3(유저모드)에서 ring 0(커널모드) 권한을 침범하면 안됨
 
-![alt text](assets/os-overview/usermode&kernelmode.png)
+<img src="assets/os-overview/usermode&kernelmode.png" width="500">
 
 1. 유저 모드는 하드웨어 장치에 직접 접근할 수 없기 때문에 시스템 콜을 호출한다.
 2. 커널 모드 진입을 위해 `mode bit = 0`으로 전환하고, `ring = 0`으로 낮아진다.
@@ -210,11 +210,4 @@ GCD는 작업이 block될 때마다 새 스레드를 생성(시스템 콜 발생
 `await` 시점에 스레드를 블록하지 않고 Task를 suspend한 뒤 다른 Task를 같은 스레드에서 실행하기 때문에, **커널 경계를 넘는 횟수 자체가 줄어든다.**
 
 > 단, await 이후 재개되는 스레드는 이전과 다를 수 있음.
-> Cooperative Thread Pool이 코어 수만큼의 스레드를 돌려 쓰기 때문.
-
-## 성능 최적화 관점
-
-- **I/O 작업이 많을수록** 시스템 콜 빈도가 높아져 모드 전환 비용이 누적된다.
-- `mmap()`을 활용하면 유저-커널 간 데이터 복사를 줄여 대용량 파일 처리 성능을 개선할 수 있다.
-- Swift의 `FileHandle`, `OutputStream` 등 내부 동작을 이해하면 불필요한 syscall을 줄이는 코드 작성이 가능하다.
-- **스레드를 많이 만들수록** 커널 진입 횟수가 늘고 컨텍스트 스위칭 비용이 누적된다 → Swift Concurrency 채택 이유 중 하나
+> Cooperative Thread Pool이 코어 수만큼의 스레드를 돌려 쓰기 때문
