@@ -1,4 +1,4 @@
-name: Slack - Discussion Notify (with assignee mention)
+name: Slack - Discussion Notify (styled)
 
 on:
   discussion:
@@ -25,16 +25,20 @@ jobs:
 
           TARGET=$(printf "%s" "$BODY" | awk '
             BEGIN{target=""}
-            /^##[[:space:]]*(질문 대상)/ {getline; gsub(/^- /,""); gsub(/^[[:space:]]+|[[:space:]]+$/,""); target=$0}
+            /^##[[:space:]]*(질문 대상)/ {
+              getline;
+              gsub(/^- /,"");
+              gsub(/^[[:space:]]+|[[:space:]]+$/,"");
+              target=$0
+            }
             END{print target}
           ')
 
-          # 비어있으면 "지정 안 함 (전체)"로 처리
           if [ -z "$TARGET" ]; then
             TARGET="지정 안 함 (전체)"
           fi
 
-          # --- 담당자 -> Slack User ID 매핑
+          # --- Slack 멘션 매핑
           mention=""
           case "$TARGET" in
             "지연") mention="<@U0AGAT6C15G>" ;;
@@ -43,20 +47,21 @@ jobs:
             "상유") mention="<@U0AFZ6BK5GX>" ;;
             "성국") mention="<@U0AFZ6KK7L7>" ;;
             "귀로") mention="<@U0AGJ7XTTJQ>" ;;
-            "지정 안 함 (전체)"|"전체"|"") mention="" ;;
-            *) mention="" ;;  # 매핑 없는 값이면 멘션 생략
+            *) mention="" ;;
           esac
 
+          # 라벨 태그처럼 보이게 가공
           if [ -n "$LABELS" ]; then
-            LABEL_TEXT="$LABELS"
+            LABEL_FORMATTED=$(echo "$LABELS" | sed 's/, /` `/g')
+            LABEL_FORMATTED="`$LABEL_FORMATTED`"
           else
-            LABEL_TEXT="none"
+            LABEL_FORMATTED="`none`"
           fi
 
           if [ -n "$mention" ]; then
-            PREFIX="$mention "
+            header_text="📢 $mention *New Discussion Created!*"
           else
-            PREFIX=""
+            header_text="📢 *New Discussion Created!*"
           fi
 
           payload=$(jq -n \
@@ -67,34 +72,39 @@ jobs:
             --arg author "$AUTHOR" \
             --arg category "$CATEGORY" \
             --arg target "$TARGET" \
-            --arg labels "$LABELS" \
+            --arg labels "$LABEL_FORMATTED" \
             '{
-              blocks: [
+              attachments: [
                 {
-                  type: "section",
-                  text: { type: "mrkdwn", text: $header }
-                },
-                { type: "divider" },
-                {
-                  type: "section",
-                  text: { type: "mrkdwn", text: "*<" + $url + "|" + $title + ">*\n_" + $repo + "_" }
-                },
-                {
-                  type: "section",
-                  fields: [
-                    { type: "mrkdwn", text: "*Category*\n" + $category },
-                    { type: "mrkdwn", text: "*Author*\n" + $author },
-                    { type: "mrkdwn", text: "*Target*\n" + $target },
-                    { type: "mrkdwn", text: "*Labels*\n" + $labels }
-                  ]
-                },
-                {
-                  type: "actions",
-                  elements: [
+                  color: "#9B59B6",
+                  blocks: [
                     {
-                      type: "button",
-                      text: { type: "plain_text", text: "Open Discussion" },
-                      url: $url
+                      type: "section",
+                      text: { type: "mrkdwn", text: $header }
+                    },
+                    { type: "divider" },
+                    {
+                      type: "section",
+                      text: { type: "mrkdwn", text: "*<" + $url + "|" + $title + ">*\n📦 _" + $repo + "_" }
+                    },
+                    {
+                      type: "section",
+                      fields: [
+                        { type: "mrkdwn", text: "🗂 *Category*\n" + $category },
+                        { type: "mrkdwn", text: "👤 *Author*\n" + $author },
+                        { type: "mrkdwn", text: "🎯 *Target*\n" + $target },
+                        { type: "mrkdwn", text: "🏷 *Labels*\n" + $labels }
+                      ]
+                    },
+                    {
+                      type: "actions",
+                      elements: [
+                        {
+                          type: "button",
+                          text: { type: "plain_text", text: "🔗 Open Discussion" },
+                          url: $url
+                        }
+                      ]
                     }
                   ]
                 }
