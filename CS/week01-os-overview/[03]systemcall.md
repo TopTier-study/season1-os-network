@@ -71,8 +71,7 @@ Swift 코드 -> Foundation 프레임워크 -> **💡 시스템 콜** -> 하드�
 
 > 시스템 호출의 종류가 **프로세스 제어**/**파일 조작**/**장치 관리**/**정보 유지**/**통신**/**보호** 로 구성되어있다는 점을 확인했습니다.  
 > XNU를 살펴보며 Mach와 BSD가 존재한다는 점을 확인했고, 각 레이어에 어떤 역할이 있는지까지 학습해봤습니다.  
-> 우리가 사용하는 고수준 API가 최종적으로는 **BSD의 서비스 정책**이나 **Mach의 하드웨어 추상화 메커니즘**을 실행하는 **시스템 호출**로 연결되어 커널의 실제 동작을 유발합니다.  
-> Darwin, XNU, Mach와 BSD에 대한 추가 학습 내용은 `4️⃣ 추가학습`을 참고해주시길 바랍니다.
+> 우리가 사용하는 고수준 API가 최종적으로는 **BSD의 서비스 정책**이나 **Mach의 하드웨어 추상화 메커니즘**을 실행하는 **시스템 호출**로 연결되어 커널의 실제 동작을 유발합니다.
 
 iOS의 커널(XNU)은 **Mach**라는 기초 위에 **BSD**라는 표준 운영체제 환경을 얹은 **하이브리드 구조**이기 때문에 시스템 호출이 이원화되어 있습니다. (macOS 또한 동일합니다.).
 
@@ -91,9 +90,7 @@ iOS의 커널(XNU)은 **Mach**라는 기초 위에 **BSD**라는 표준 운영�
 |   스레드   |     pthreads (POSIX)      |   SMP 스케줄러, 실시간 서비스    |
 |    보안    |  UNIX 보안 모델, syscall  |                -                 |
 
-### 3️⃣ 추가 학습: Apple’s Darwin OS and XNU Kernel Deep Dive (✍️ 수정 예정)
-
-### 4️⃣ 추가 학습: ARM 호출 규약 (svc 확인하기)
+### 3️⃣ 추가 학습: ARM 호출 규약 (svc 확인하기)
 
 > 아래의 내용은 함수 호출 시 어떤 일이 일어나는지 추가 학습한 내용으로, 주요 주제에서 확장된 내용입니다.
 
@@ -102,7 +99,7 @@ ARM64에서 `svc`의 immediate 값(`#0x80`은 커널이 무시하며, 실제 시
 ARM64에서 실제 시스템 콜 번호는 `x16` 레지스터에 담깁니다.
 **Xcode에서 디버깅 중 나오는 어셈블리 코드에서 해당 명령어가 확인될 경우 시스템 호출이 동작한다는 걸 확인할 수 있습니다.**
 
-![svc](assets/systemcall/systemcall_1.png)
+![svc](references/assets/systemcall/systemcall_1.png)
 
 #### 🔍 ARM64 호출 규약 전체 정리: 함수 호출 시 발생하는 내부 동작
 
@@ -220,7 +217,7 @@ Caller-saved 레지스터에 뒀을 경우 함수 호출 지점마다 저장/복
 
 #### [1] 샘플 코드 작성
 
-![samplecode01](assets/systemcall/systemcall_2.png)
+![samplecode01](references/assets/systemcall/systemcall_2.png)
 
 #### [2] libsystem_kernel의 write에 브레이크 포인트 걸고 콜스택 확인
 
@@ -231,7 +228,7 @@ Caller-saved 레지스터에 뒀을 경우 함수 호출 지점마다 저장/복
 3. (브레이크 포인트 걸어둔 kernel `write`에서 다시 정지)
 4. `bt` : 콜 스택 확인
 
-![callstack](assets/systemcall/systemcall_3.png)
+![callstack](references/assets/systemcall/systemcall_3.png)
 
 ```
 frame #9:  systemcall-file`main          ← Swift 코드 (try! data.write(to: url))
@@ -248,7 +245,7 @@ frame #0:  libsystem_kernel.dylib`write   ← LibSystem의 write() — 여기서
 1. Xcode의 Debug -> Debug workflow -> Always Show Disassembly 체크
 2. lldb에 disassemble 입력
 
-![assembly](assets/systemcall/systemcall_4.png)
+![assembly](references/assets/systemcall/systemcall_4.png)
 
 ```
 mov    x16, #0x4     ← 시스템 콜 번호 4(write)를 x16에 설정
@@ -272,7 +269,7 @@ retab                ← 리턴 (포인터 인증 포함)
 
 > 여기서 일부러 `Data.write(to:)`가 아니라 POSIX `write()`를 직접 쓴 이유는, Foundation의 내부 버퍼링을 거치지 않고 **시스템 콜 횟수를 정확히 통제**하기 위해서 입니다.
 
-![samplecode02](assets/systemcall/systemcall_5.png)
+![samplecode02](references/assets/systemcall/systemcall_5.png)
 
 #### [2] 출력문으로 시간 차이 확인
 
@@ -294,7 +291,7 @@ Program ended with exit code: 0
 - **csops + mac_syscall**
   - 보안 검증이 시스템 콜로 수행됨 → 비용 산정에서 학습한 "파라미터 검증"이 커널 레벨에서도 일어난다는 점을 확인했습니다.
 
-![instrument](assets/systemcall/systemcall_6.png)
+![instrument](references/assets/systemcall/systemcall_6.png)
 
 ### 🔍 메인 스레드에서 대용량 파일 I/O 재현 및 개선하기
 
@@ -355,13 +352,13 @@ var body: some View {
 | `mach_vm_allocate_trap` | 107   | 218ms     | 2.04μs  | 10.29μs | 메모리 할당                   |
 | `mmap`                  | 78    | 289ms     | 3.71μs  | 34.50μs | 메모리 매핑                   |
 
-![instrument](assets/systemcall/systemcall_7.png)
+![instrument](references/assets/systemcall/systemcall_7.png)
 
 2️⃣ Hangs  
 총 17번의 Hang 중 **500ms 이상을 소요하는 Hang이 5회 발생했습니다.  
 (530ms, 781ms, 785ms, 526ms, 782ms)**
 
-![instrument](assets/systemcall/systemcall_8.png)
+![instrument](references/assets/systemcall/systemcall_8.png)
 
 **3️⃣ 문제 분석**  
 화면을 스크롤 하면서 **새로운 셀이 나타날 때마다 메인 스레드에서 `open`→`read`→`close`→`디코딩` 작업을 반복하는 것을 확인**했습니다.  
@@ -388,7 +385,7 @@ var body: some View {
 | `sys_close`   | 177  | 120.96μs  | 683ns   | 677ns | 파일 닫기      |
 | `sys_fstat64` | 35   | 33.75μs   | 964ns   | 873ns | 파일 크기 조회 |
 
-![instrument](assets/systemcall/systemcall_9.png)
+![instrument](references/assets/systemcall/systemcall_9.png)
 
 2️⃣ Hangs  
 Hang이 발생하지 않았습니다.  
