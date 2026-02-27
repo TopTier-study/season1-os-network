@@ -50,12 +50,19 @@ jobs:
             *) mention="" ;;
           esac
 
-          # 라벨 태그처럼 보이게 가공
+          # 라벨 태그처럼 보이게 가공: "a, b, c" -> "`a` `b` `c`"
           if [ -n "$LABELS" ]; then
-            LABEL_FORMATTED=$(echo "$LABELS" | sed 's/, /` `/g')
+            LABEL_FORMATTED=$(echo "$LABELS" | sed 's/, /` ` /g')
             LABEL_FORMATTED="`$LABEL_FORMATTED`"
           else
             LABEL_FORMATTED="`none`"
+          fi
+
+          # 카테고리에 따라 이모지 달리기 (원하면 더 늘려도 됨)
+          if [ "$CATEGORY" = "Q&A" ] || [ "$CATEGORY" = "QnA" ] || [ "$CATEGORY" = "QNA" ]; then
+            cat_emoji="❓"
+          else
+            cat_emoji="💬"
           fi
 
           if [ -n "$mention" ]; then
@@ -73,10 +80,11 @@ jobs:
             --arg category "$CATEGORY" \
             --arg target "$TARGET" \
             --arg labels "$LABEL_FORMATTED" \
+            --arg catEmoji "$cat_emoji" \
             '{
               attachments: [
                 {
-                  color: "#9B59B6",
+                  color: "9B59B6",
                   blocks: [
                     {
                       type: "section",
@@ -85,7 +93,7 @@ jobs:
                     { type: "divider" },
                     {
                       type: "section",
-                      text: { type: "mrkdwn", text: "*<" + $url + "|" + $title + ">*\n📦 _" + $repo + "_" }
+                      text: { type: "mrkdwn", text: "*" + $catEmoji + " <" + $url + "|" + $title + ">*\n📦 _" + $repo + "_" }
                     },
                     {
                       type: "section",
