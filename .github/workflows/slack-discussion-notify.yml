@@ -38,7 +38,6 @@ jobs:
             TARGET="지정 안 함 (전체)"
           fi
 
-          # --- Slack 멘션 매핑
           mention=""
           case "$TARGET" in
             "지연") mention="<@U0AGAT6C15G>" ;;
@@ -50,11 +49,8 @@ jobs:
             *) mention="" ;;
           esac
 
-          if [ -n "$LABELS" ]; then
-            LABEL_FORMATTED=$(echo "$LABELS" | sed 's/, /\\` \\`/g')
-            LABEL_FORMATTED="\\`$LABEL_FORMATTED\\`"
-          else
-              LABEL_FORMATTED="\\`none\\`"
+          if [ -z "$LABELS" ]; then
+            LABELS="none"
           fi
 
           if [ "$CATEGORY" = "Q&A" ] || [ "$CATEGORY" = "QnA" ] || [ "$CATEGORY" = "QNA" ]; then
@@ -77,39 +73,44 @@ jobs:
             --arg author "$AUTHOR" \
             --arg category "$CATEGORY" \
             --arg target "$TARGET" \
-            --arg labels "$LABEL_FORMATTED" \
+            --arg labelsRaw "$LABELS" \
             --arg catEmoji "$cat_emoji" \
             '{
               attachments: [
                 {
                   color: "9B59B6",
                   blocks: [
-                    {
-                      type: "section",
-                      text: { type: "mrkdwn", text: $header }
-                    },
+                    { type: "section", text: { type: "mrkdwn", text: $header } },
                     { type: "divider" },
                     {
                       type: "section",
-                      text: { type: "mrkdwn", text: "*" + $catEmoji + " <" + $url + "|" + $title + ">*\n📦 _" + $repo + "_" }
+                      text: {
+                        type: "mrkdwn",
+                        text: ("*" + $catEmoji + " <" + $url + "|" + $title + ">*\n📦 _" + $repo + "_")
+                      }
                     },
                     {
                       type: "section",
                       fields: [
-                        { type: "mrkdwn", text: "🗂 *Category*\n" + $category },
-                        { type: "mrkdwn", text: "👤 *Author*\n" + $author },
-                        { type: "mrkdwn", text: "🎯 *Target*\n" + $target },
-                        { type: "mrkdwn", text: "🏷 *Labels*\n" + $labels }
+                        { type: "mrkdwn", text: ("🗂 *Category*\n" + $category) },
+                        { type: "mrkdwn", text: ("👤 *Author*\n" + $author) },
+                        { type: "mrkdwn", text: ("🎯 *Target*\n" + $target) },
+                        {
+                          type: "mrkdwn",
+                          text: ("🏷 *Labels*\n" + (
+                            if $labelsRaw == "none" then
+                              "`none`"
+                            else
+                              ("`" + ($labelsRaw | gsub(",\\s*"; "` `")) + "`")
+                            end
+                          ))
+                        }
                       ]
                     },
                     {
                       type: "actions",
                       elements: [
-                        {
-                          type: "button",
-                          text: { type: "plain_text", text: "🔗 Open Discussion" },
-                          url: $url
-                        }
+                        { type: "button", text: { type: "plain_text", text: "🔗 Open Discussion" }, url: $url }
                       ]
                     }
                   ]
