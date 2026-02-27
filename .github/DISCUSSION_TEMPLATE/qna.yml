@@ -1,0 +1,57 @@
+title: "Q&A Template"
+body:
+  - type: dropdown
+    id: week
+    attributes:
+      label: 주차
+      options:
+        - week-01
+        - week-02
+        - week-03
+        - week-04
+        - week-05
+        - week-06
+    validations:
+      required: true
+
+- type: dropdown
+  id: target
+  attributes:
+    label: 질문 대상 (선택)
+    description: 특정 사람에게 묻고 싶다면 선택하세요.
+    options:
+      - 지정 안 함 (전체)
+      - 지연
+      - 윤서
+      - 선재
+      - 상유
+      - 성국
+      - 귀로
+  validations:
+    required: false
+    
+  - type: textarea
+    id: question
+    attributes:
+      label: 질문
+      description: 무엇이 헷갈리는지/정확히 무엇을 알고 싶은지
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 배경/맥락
+      description: 어떤 전제에서 막혔는지, 코드/그림/링크 가능
+    validations:
+      required: false
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: 내가 시도한 것
+      placeholder: |
+        - 
+        - 
+    validations:
+      required: false
