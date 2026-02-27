@@ -1,0 +1,52 @@
+title: "Discussion Template"
+body:
+  - type: dropdown
+    id: week
+    attributes:
+      label: 주차
+      options:
+        - week-01
+        - week-02
+        - week-03
+        - week-04
+        - week-05
+        - week-06
+    validations:
+      required: true
+
+  - type: textarea
+    id: topic
+    attributes:
+      label: 관련 개념 키워드
+    validations:
+      required: true
+
+  - type: textarea
+    id: agenda
+    attributes:
+      label: 토론 주제
+      placeholder: "예: 시스템 콜이 많아도 시간이 짧으면 문제가 될 수 있을까?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: stance
+    attributes:
+      label: 내 주장/가설
+    validations:
+      required: false
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 근거/레퍼런스/실험
+      description: 링크/수치/간단 실험 결과 등
+    validations:
+      required: false
+
+  - type: textarea
+    id: counter
+    attributes:
+      label: 반론 가능성/열린 질문
+    validations:
+      required: false
