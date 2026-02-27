@@ -259,7 +259,7 @@ arm, arm64 등 xnu가 지원하는 아키텍쳐의 폴더와, 공통으로 사�
     ```
     
 
-4개의 핸들러 중 `handler_pc_align` 핸들러 내부를 파악해보자.
+4개의 핸들러 중 하나인 `handler_pc_align` 핸들러 내부를 파악해보자.
 - 커널/유저 모드 여부를 확인해서 커널 모드일 경우 심각한 상태로 판단하고 시스템을 중단시킨다.
 - PAC 기능을 사용하는 경우, 인증 로직을 수행해 포인터 변조로 인해 오류가 발생한 것은 아닌지 검사하고, 인증에 실패했을 경우 예외 타입을 변경하여 보안 관련 문제임을 명시한다.
 - 이후 구체적인 오류의 원인과 문제가 발생한 주소를 codes 배열에 저장하고, exception_triage 메서드를 호출하여 예외를 전달한다.
@@ -288,7 +288,7 @@ handle_pc_align(arm_saved_state_t *ss)
 	}
 #endif /* __has_feature(ptrauth_calls) */
 
-	codes[0] = EXC_ARM_DA_ALIGN; // 구체적인 오류 원인 명시
+	codes[0] = EXC_ARM_DA_ALIGN; // 구체적인 오류 원인 명시 (예외 하위 타입)
 	codes[1] = get_saved_state_pc(ss); // 문제가 발생한 실제 메모리 주소를 저장
   
   // EXC_BAD_ACCESS라는 이름의 Mach Exception으로 만들어 해당 스레드에 보냄
@@ -375,7 +375,7 @@ handle_pc_align(arm_saved_state_t *ss)
 ```
 
 
-5. **최종 목적지 결정: `exception_triage_thread` 호출**
+5. **최종 예외 핸들러 결정: `exception_triage_thread` 호출**
 
 - 모든 필터링과 보안 검사를 통과하면, 이제 이 예외를 “누구”에게 전달할지 결정하는 다음 단계인 **`exception_triage_thread`**로 제어권을 넘긴다.
 
@@ -396,7 +396,7 @@ handle_pc_align(arm_saved_state_t *ss)
 **3단계: Host Level (시스템 전체)**
 
 - **대상**: `host_priv->exc_actions`
-- **특징**: 특정 앱 수준에서도 처리하지 못한 예외를 마지막으로 시스템(OS) 전체 관리자에게 던진다.
+- **특징**: 특정 앱 수준에서도 처리하지 못한 예외를 마지막으로 시스템(OS) 전체 관리자에게 던진다. (fallback 용도)
 
 **BSD 레이어에서 예외를 처리하는 경우**
 
