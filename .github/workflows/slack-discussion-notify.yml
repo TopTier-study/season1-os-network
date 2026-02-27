@@ -24,14 +24,19 @@ jobs:
           set -e
 
           TARGET=$(printf "%s" "$BODY" | awk '
-            BEGIN{target=""}
-            /^###[[:space:]]*(질문 대상)/ {
-              getline;
-              gsub(/^- /,"");
-              gsub(/^[[:space:]]+|[[:space:]]+$/,"");
+            BEGIN { inTarget=0; target="" }
+
+            /^#{2,3}[[:space:]]*질문 대상[[:space:]]*$/ { inTarget=1; next }
+
+            inTarget==1 {
+              if ($0 ~ /^[[:space:]]*$/) next
               target=$0
+              gsub(/^[[:space:]]*[-*][[:space:]]*/, "", target)
+              gsub(/^[[:space:]]+|[[:space:]]+$/, "", target)
+              inTarget=0
             }
-            END{print target}
+
+            END { print target }
           ')
 
           if [ -z "$TARGET" ]; then
