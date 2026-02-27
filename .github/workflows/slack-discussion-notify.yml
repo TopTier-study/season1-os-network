@@ -1,0 +1,65 @@
+name: Slack - Discussion Notify (with assignee mention)
+
+on:
+  discussion:
+    types: [created]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post discussion to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_DISCUSSION_WEBHOOK }}
+
+          REPO: ${{ github.repository }}
+          TITLE: ${{ github.event.discussion.title }}
+          URL: ${{ github.event.discussion.html_url }}
+          AUTHOR: ${{ github.event.discussion.user.login }}
+          CATEGORY: ${{ github.event.discussion.category.name }}
+          BODY: ${{ github.event.discussion.body }}
+          LABELS: ${{ join(github.event.discussion.labels.*.name, ', ') }}
+
+        run: |
+          set -e
+
+          TARGET=$(printf "%s" "$BODY" | awk '
+            BEGIN{target=""}
+            /^##[[:space:]]*(질문 대상)/ {getline; gsub(/^- /,""); gsub(/^[[:space:]]+|[[:space:]]+$/,""); target=$0}
+            END{print target}
+          ')
+
+          # 비어있으면 "지정 안 함 (전체)"로 처리
+          if [ -z "$TARGET" ]; then
+            TARGET="지정 안 함 (전체)"
+          fi
+
+          # --- 담당자 -> Slack User ID 매핑
+          mention=""
+          case "$TARGET" in
+            "지연") mention="<@U0AGAT6C15G>" ;;
+            "윤서") mention="<@U0AGCV8GPJA>" ;;
+            "선재") mention="<@U0AGTH6D96V>" ;;
+            "상유") mention="<@U0AFZ6BK5GX>" ;;
+            "성국") mention="<@U0AFZ6KK7L7>" ;;
+            "귀로") mention="<@U0AGJ7XTTJQ>" ;;
+            "지정 안 함 (전체)"|"전체"|"") mention="" ;;
+            *) mention="" ;;  # 매핑 없는 값이면 멘션 생략
+          esac
+
+          if [ -n "$LABELS" ]; then
+            LABEL_TEXT="$LABELS"
+          else
+            LABEL_TEXT="none"
+          fi
+
+          if [ -n "$mention" ]; then
+            PREFIX="$mention "
+          else
+            PREFIX=""
+          fi
+
+          TEXT="${PREFIX}*[$REPO]* 새 Discussion이 올라왔어요\n*Category:* $CATEGORY\n*Title:* $TITLE\n*Author:* $AUTHOR\n*Target:* $TARGET\n*Labels:* $LABEL_TEXT\n$URL"
+
+          payload=$(jq -n --arg text "$TEXT" '{text: $text}')
+          curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
