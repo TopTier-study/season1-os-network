@@ -25,7 +25,7 @@ jobs:
 
           TARGET=$(printf "%s" "$BODY" | awk '
             BEGIN{target=""}
-            /^##[[:space:]]*(질문 대상|담당자)/ {getline; gsub(/^- /,""); gsub(/^[[:space:]]+|[[:space:]]+$/,""); target=$0}
+            /^##[[:space:]]*(질문 대상)/ {getline; gsub(/^- /,""); gsub(/^[[:space:]]+|[[:space:]]+$/,""); target=$0}
             END{print target}
           ')
 
