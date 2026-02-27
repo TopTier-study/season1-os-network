@@ -30,23 +30,16 @@ body:
       required: true
 
   - type: textarea
+    id: context
+    attributes:
+      label: 배경 / 맥락
+      description: 관련 개념이나 문서 링크를 포함해 주세요.
+    validations:
+      required: false
+
+  - type: textarea
     id: stance
     attributes:
       label: 내 주장/가설
-    validations:
-      required: false
-
-  - type: textarea
-    id: evidence
-    attributes:
-      label: 근거/레퍼런스/실험
-      description: 링크/수치/간단 실험 결과 등
-    validations:
-      required: false
-
-  - type: textarea
-    id: counter
-    attributes:
-      label: 반론 가능성/열린 질문
     validations:
       required: false
