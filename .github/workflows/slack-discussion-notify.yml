@@ -59,7 +59,47 @@ jobs:
             PREFIX=""
           fi
 
-          TEXT="${PREFIX}*[$REPO]* 새 Discussion이 올라왔어요\n*Category:* $CATEGORY\n*Title:* $TITLE\n*Author:* $AUTHOR\n*Target:* $TARGET\n*Labels:* $LABEL_TEXT\n$URL"
+          payload=$(jq -n \
+            --arg header "$header_text" \
+            --arg repo "$REPO" \
+            --arg title "$TITLE" \
+            --arg url "$URL" \
+            --arg author "$AUTHOR" \
+            --arg category "$CATEGORY" \
+            --arg target "$TARGET" \
+            --arg labels "$LABELS" \
+            '{
+              blocks: [
+                {
+                  type: "section",
+                  text: { type: "mrkdwn", text: $header }
+                },
+                { type: "divider" },
+                {
+                  type: "section",
+                  text: { type: "mrkdwn", text: "*<" + $url + "|" + $title + ">*\n_" + $repo + "_" }
+                },
+                {
+                  type: "section",
+                  fields: [
+                    { type: "mrkdwn", text: "*Category*\n" + $category },
+                    { type: "mrkdwn", text: "*Author*\n" + $author },
+                    { type: "mrkdwn", text: "*Target*\n" + $target },
+                    { type: "mrkdwn", text: "*Labels*\n" + $labels }
+                  ]
+                },
+                {
+                  type: "actions",
+                  elements: [
+                    {
+                      type: "button",
+                      text: { type: "plain_text", text: "Open Discussion" },
+                      url: $url
+                    }
+                  ]
+                }
+              ]
+            }'
+          )
 
-          payload=$(jq -n --arg text "$TEXT" '{text: $text}')
           curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
