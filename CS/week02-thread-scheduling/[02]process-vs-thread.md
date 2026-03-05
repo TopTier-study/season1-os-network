@@ -22,7 +22,7 @@
 실행 중 동적으로 할당되는 메모리가 Heap 영역에 들어가고, 해당 메모리가 해제될 때 `Heap`에서 제거됩니다.  
 아래 그림처럼 `Stack`과 `Heap`은 서로를 향해 영역이 커지는데, 둘 사이에 미할당 가상 메모리 영역이 존재하며, 서로 영역이 충돌하면 메모리 접근 오류가 발생합니다.
 
-**이미지 삽입 예정**
+![Process Memory Layout](references/assets/thread-vs-process/vs_1.png)
 
 프로세스의 메모리 공간은 독립적으로, 한 프로세스는 다른 프로세스의 메모리에 직접 접근할 수 없습니다.  
 **프로세스 간 데이터를 주고받기 위해 IPC(Inter Process Communication)**라는 메커니즘이 필요합니다.
@@ -165,7 +165,7 @@ WidgetCenter.shared.reloadTimelines(ofKind: "MyWidget")
 > Xcode에서 race condition을 감지하는 기능을 설정할 수 있습니다.  
 > Edit scheme -> Run -> Diagnostics -> Thread Sanitizer 선택  
 > 참고 자료 - [\[Xcode\] Thread Sanitizer - Race Condition 디버깅](https://jeong9216.tistory.com/659#google_vignette)
-> ![Thread Sanitizer](references/assets/thread-vs-process/vs_1.png)
+> ![Thread Sanitizer](references/assets/thread-vs-process/vs_2.png)
 
 여러 스레드에서 동시에 배열의 append를 호출하는 문제 상황을 만들어봤습니다.
 
@@ -187,7 +187,7 @@ print(sharedArray.count) // 1000이 아닐 수 있고, 크래시 가능
 > 아래 결과에서 메인 스레드가 왜 쓰기 접근을 했는지 궁금해 알아본 결과, DispatchQueue.concurrentPerform은 호출한 스레드도 워커로 활용한다고 합니다.  
 > [공식 문서 링크](https://developer.apple.com/documentation/Dispatch/DispatchQueue/concurrentPerform%28iterations:execute:%29)
 
-![debug](references/assets/thread-vs-process/vs_2.png)
+![debug](references/assets/thread-vs-process/vs_3.png)
 
 #### 해결 방법
 
