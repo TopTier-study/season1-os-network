@@ -165,7 +165,7 @@ best: 1.026s | throughput: 78.0 tasks/s | sink: 6
 | 20          | 0.994s     | 80.4 tasks/s     |
 | 40          | 1.026s     | 78.0 tasks/s     |
 
-![](%5B06%5D%20throughput-experiment/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202026-03-06%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%208.00.35.png)
+<img width="2240" height="1260" alt="스크린샷 2026-03-06 오전 8 00 35" src="https://github.com/user-attachments/assets/ebccb6a4-fb84-4e94-908c-505b37f77fe0" />
 
 ### 5) 결과 해석
 #### concurrency < CPU cores
@@ -184,7 +184,9 @@ best: 1.026s | throughput: 78.0 tasks/s | sink: 6
 #### Instruments System Trace 관찰 내용
 - concurrency 증가와 동시에 CPU usage 증가
 
-![](%5B06%5D%20throughput-experiment/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202026-03-06%20%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB%208.10.37.png)
+<img width="2240" height="1260" alt="스크린샷 2026-03-06 오전 7 59 14" src="https://github.com/user-attachments/assets/f91a861e-1848-4665-9604-5597d28df426" />
+
+
 - 스레드 상태
   - Running: CPU에서 실제 실행 중
   - Runnable: CPU를 기다리는 스레드
