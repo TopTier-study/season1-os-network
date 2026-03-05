@@ -194,10 +194,31 @@ best: 1.026s | throughput: 78.0 tasks/s | sink: 6
   - **코어 수를 초과한 이후 runnable / Preempted 상태의 스레드 증가** -> 스케줄링 대기와 컨텍스트 스위칭 오버헤드 발생
   - -> throughput 감소
 
-### 6) iOS와 연결
+### 6) iOS 개발과의 연결
 이미지 디코딩, 영상 처리 등과 같은 CPU 작업을 많은 스레드로 실행할 경우 성능이 좋아지지 않는다.
 오히려 **컨텍스트 스위칭이 증가하여 latency가 증가할 수 있다.**
 
 #### Apple이 GCD를 만든 이유
 - GCD는 내부적으로 스레드 풀을 사용 -> **CPU core 수를 기반으로 스레드 수를 관리**
 - 즉 **oversubscription 방지를 자동으로 수행**
+
+
+### 7) iOS 환경에서 실험할 경우 변화점
+macOS와 iOS는 동일한 **Darwin(XNU) 커널**을 사용하기 때문에 스케줄링의 기본 원리는 동일하다.
+그러나 실제 iOS 기기에서는 다음과 같은 차이로 인해 실험 결과의 형태가 조금 달라질 수 있다.
+
+#### 1. big.LITTLE CPU 구조
+```
+2 Performance cores (P-core)
+4 Efficiency cores (E-core)
+```
+이때 activeProcessorCount는 6으로 나오지만 실제 성능은 동일하지 X
+**P-core가 먼저 사용되고 이후 E-core가 사용되므로** concurrency 증가 시 macOS의 코어 수별 throughput 증가 속도와 다를 수 있다.
+
+#### 2. QoS 기반 스케줄링
+iOS에서는 **QoS(Quality of Service)**가 스케줄링에 큰 영향을 준다.
+`.userInteractive`와 같은 높은 QoS는 Performance core에 우선 배치될 가능성이 높으므로 이에 따라 실험 결과가 달라질 수 있다.
+
+#### 3. Thermal Throttling
+아이폰은 발열 제한이 강하므로 CPU를 오래 100% 사용할 경우 Thermal Throttling이 발생하여 CPU 사용 빈도가 감소하게 되고 이에 따라 throughput이 감소할 수 있다.
+macOS는 냉각 시스템이 더 강하기 때문에 이러한 영향이 상대적으로 적어 안정적인 실험 결과를 얻을 수 있다.
