@@ -241,7 +241,7 @@ print(sharedArray.count) // 1000 보장
 
 - 동기화 주체: 개발자
 - Data race 감지 시점: 런타임
-- 주의할 점: Swift에서 구조체의 주소를 넘겨야 하므로 메모리 안정성에 주의해야 하고, 대기 중인 스레드의 우선순위를 고려하지 않기 때문에 priority inversion이 발생할 수 있습니다.
+- 주의할 점: Swift에서 구조체의 주소를 넘겨야 하므로 메모리 안정성에 주의해야 합니다.
 
 ```swift
 import Foundation
@@ -297,8 +297,13 @@ print(readAll().count) // 1000 보장
 
 5. **Actor**  
    Swift Concurrency에서 제공하는 참조 타입으로, 컴파일러가 내부 상태의 격리를 강제합니다.  
-   외부에서 await 없이 접근하면 컴파일 에러가 발생하기 때문에 Data Race를 컴파일 타임에 방지할 수 있습니다.  
+   Actor 격리 영역 외부에서 상태에 접근할 때는 await가 필요하며, 이를 어기면 컴파일 에러가 발생합니다.  
+   이를 통해 많은 Data Race를 컴파일 타임에 방지할 수 있습니다.  
    async/await 기반의 코드에 적합합니다.
+
+- 동기화 주체: 컴파일러 + 런타임(Actor executor)
+- Data race 감지 시점: 주로 컴파일 타임
+- 주의할 점: 기존 GCD 코드와 혼용할 때 경계 처리가 필요하며, actor 간 순환 호출로 인한 논리적 문제를 주의해야 합니다.
 
 - 동기화 주체: 컴파일러
 - Data race 감지 시점: 컴파일 타임
