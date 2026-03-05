@@ -78,7 +78,8 @@
 > 참고 링크: [Throughput과 Latency](https://velog.io/@arnold_99/Throughput%EA%B3%BC-Latency)
 
 예시: A, B, C 지역을 잇는 고속도로에서
-![](%5B06%5D%20performance-metrics-for-systems-and-user-experience/%E1%84%80%E1%85%A9%E1%84%89%E1%85%A9%E1%86%A8%E1%84%83%E1%85%A9%E1%84%85%E1%85%A9%20%E1%84%8B%E1%85%A8%E1%84%89%E1%85%B5.png)
+<img width="3886" height="967" alt="고속도로 예시" src="https://github.com/user-attachments/assets/761ad022-8fc0-479e-9f3c-f8667a981106" />
+
 - A-C 지역 간 Latency: 각 구간의 소요 시간 합계인 5시간
 * A-C 지역 간 Throughput: 각 구간에 도달하는 차량 대수 중 최소값인 800대/시간
 
