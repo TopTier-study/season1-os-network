@@ -178,7 +178,7 @@ best: 1.026s | throughput: 78.0 tasks/s | sink: 6
 #### concurrency > CPU cores
 - 양상: `[20, 40]` 구간에서 throughput **감소**
 - 원인: thread oversubscription
-  - CPU 코어보다 스레드가 많아지면 스케줄러가 스레드를 번갈아서 실행한다. (time slicing) -> 추가 비용 발생
+  - CPU 코어 수보다 Runnable 상태의 스레드가 많아지면 스케줄러가 스레드를 번갈아서 실행한다. (time slicing) -> 추가 비용 발생
     - ’추가 비용’: 컨텍스트 스위칭, 캐시 미스, 스케줄러 오버헤드 등
 
 #### Instruments System Trace 관찰 내용
@@ -200,8 +200,7 @@ best: 1.026s | throughput: 78.0 tasks/s | sink: 6
 
 #### Apple이 GCD를 만든 이유
 - GCD는 내부적으로 스레드 풀을 사용 -> **CPU core 수를 기반으로 스레드 수를 관리**
-- 즉 **oversubscription 방지를 자동으로 수행**
-
+- 즉 불필요한 스레드 폭증을 자동으로 줄여줌.
 
 ### 7) iOS 환경에서 실험할 경우 변화점
 macOS와 iOS는 동일한 **Darwin(XNU) 커널**을 사용하기 때문에 스케줄링의 기본 원리는 동일하다.
@@ -222,3 +221,22 @@ iOS에서는 **QoS(Quality of Service)**가 스케줄링에 큰 영향을 준다
 #### 3. Thermal Throttling
 아이폰은 발열 제한이 강하므로 CPU를 오래 100% 사용할 경우 Thermal Throttling이 발생하여 CPU 사용 빈도가 감소하게 되고 이에 따라 throughput이 감소할 수 있다.
 macOS는 냉각 시스템이 더 강하기 때문에 이러한 영향이 상대적으로 적어 안정적인 실험 결과를 얻을 수 있다.
+
+## 3. 의문 / 논점
+### 왜 concurrency가 CPU 코어 수를 넘었을 때 성능이 급격하게 떨어지지 않았을까?
+이론적으로 CPU-bound 작업에서 동시 실행 작업 수가 CPU 코어 수 초과 시 컨텍스트 스위칭, 캐시 미스, 스케줄러 오버헤드 비용이 증가한다.
+따라서 concurrency가 CPU 코어 수를 넘을 경우 throughput이 급격하게 감소될 것이라고 예측하였다.
+
+그러나 실제 실험 결과에서는 **완만하게 감소**했다.
+
+#### 이유 1) GCD의 adaptive thread pool
+- GCD는 내부적으로 스레드 풀을 사용하는데, 이때 단순히 `스레드 = task 수`로 생성하지 X
+  -> 시스템 상태를 고려하여 `스레드 수 = CPU core 수` 수준으로 유지하려고 함.
+- 즉 concurrency가 40이어도 **실제로 동시에 실행되는 worker 스레드는 제한**됨.
+  - running 스레드 = CPU cores
+  - runnable tasks > cores
+  - -> 이 경우 실제로 oversubscription이 심하게 폭발하지 X
+
+#### 이유 2) Darwin scheduler의 time slicing
+- Darwin(XNU) 커널의 스케줄러는 **time slicing 기반 preemptive scheduling**을 사용한다.
+- 타임 슬라이스마다 컨텍스트 스위칭이 발생하지만 현대 CPU에서 이 비용이 매우 크지는 않기 때문에 throughput이 급격하게 감소하지 않는다.
