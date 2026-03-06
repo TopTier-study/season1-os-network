@@ -287,3 +287,157 @@ Ready Queue를 여러 개의 독립된 큐로 나누고, 각 큐마다 다른 �
 | Multi-level Queue | 선점   | 큐별 상이      | 낮음      | 발생 가능    | 큐 간 이동 불가                  |
 | MFQ               | 선점   | 양호           | 높음      | 없음 (Aging) | 현대 OS 표준                     |
 | Fair-share        | 선점   | 그룹별 균등    | 중간      | 없음         | 사용자 단위 공평성               |
+
+## 5. iOS / macOS에서의 스케줄링
+
+### 커널 기반: XNU + Mach 스케줄러
+
+Apple 플랫폼은 **XNU 커널** 위에서 동작하며, 스케줄러는 **Mach 스케줄러**를 기반으로 한다.
+
+- 기본 구조는 **MFQ(다단계 피드백 큐)** 계열이지만, 단순 우선순위 숫자 대신 **QoS(Quality of Service)** 라는 의도(intent) 기반 등급으로 추상화
+- 배터리 상태, 발열, 포그라운드/백그라운드 여부에 따라 시스템이 동적으로 스케줄링에 개입한다.
+
+---
+
+### QoS (Quality of Service) 등급
+
+| QoS 등급           | 우선순위 | 용도                      | 예시                          |
+| ------------------ | -------- | ------------------------- | ----------------------------- |
+| `.userInteractive` | 최고     | UI 갱신, 애니메이션       | 메인 스레드, 터치 이벤트 처리 |
+| `.userInitiated`   | 높음     | 사용자가 직접 요청한 작업 | 버튼 탭 후 데이터 로드        |
+| `.default`         | 중간     | 일반 작업                 | QoS 미지정 시 기본값          |
+| `.utility`         | 낮음     | 오래 걸리는 작업          | 파일 다운로드, 프로그레스바   |
+| `.background`      | 최저     | 사용자에게 안 보이는 작업 | 백업, 인덱싱, 캐시 정리       |
+| `.unspecified`     | 없음     | QoS 정보 없음             | 레거시 API                    |
+
+---
+
+### iOS vs macOS 동작 차이
+
+| 항목                      | iOS                                                                             | macOS                                                      |
+| ------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **포그라운드/백그라운드** | 백그라운드 앱은 `.background` QoS로 강제 강등, 일정 시간 후 실행 중지           | 백그라운드 앱도 계속 실행 가능, QoS 강등 없음              |
+| **배터리 최적화**         | Low Power Mode 시 `.background`, `.utility` 작업 실행 빈도를 시스템이 직접 제한 | 배터리 절약 모드가 있지만 iOS보다 덜 공격적으로 개입       |
+| **메모리 압박**           | 메모리 부족 시 백그라운드 앱을 적극적으로 종료(Jetsam)                          | 가상 메모리 스왑을 통해 앱을 종료하지 않고 유지            |
+| **실시간 스레드**         | 오디오, 렌더링 등 제한적으로만 허용                                             | 더 넓은 범위에서 실시간 스레드 허용                        |
+| **App Nap**               | 없음                                                                            | 비활성 앱의 타이머, 네트워크 등 리소스를 자동으로 throttle |
+
+> **핵심 차이 요약**: iOS는 배터리와 메모리 제약으로 인해 시스템이 스케줄링에 훨씬 적극적으로 개입하고, macOS는 상대적으로 앱의 자율성을 더 많이 허용한다.
+
+---
+
+### GCD (Grand Central Dispatch)
+
+GCD는 XNU의 QoS 시스템 위에서 **스레드 풀을 추상화**해주는 레이어
+개발자가 직접 스레드를 생성/관리하지 않고, 큐에 작업을 던지면 시스템이 알아서 스레드를 배정한다.
+
+**동작 원리**
+
+```
+작업(Block) 제출
+      ↓
+DispatchQueue (Serial / Concurrent)
+      ↓
+GCD 스레드 풀 (Thread Pool)   ← 시스템이 코어 수에 맞게 스레드 수 조절
+      ↓
+Mach 스케줄러 (QoS → 우선순위 변환)
+      ↓
+CPU 코어 실행
+```
+
+1. 작업을 큐에 제출하면 GCD가 내부 스레드 풀에서 적절한 스레드를 골라 배정
+2. 큐의 QoS가 Mach 스케줄러의 우선순위로 변환되어 실제 CPU 시간 배분에 반영
+3. 스레드가 부족하면 새로 생성, 남으면 회수 — 개발자는 이 과정을 신경 쓰지 않아도 됨
+
+```swift
+// QoS가 다른 큐 — 내부적으로 서로 다른 Mach 우선순위를 가짐
+DispatchQueue.global(qos: .userInteractive).async { /* 높은 우선순위 */ }
+DispatchQueue.global(qos: .background).async     { /* 낮은 우선순위 */ }
+
+// Serial Queue — 작업이 순서대로 하나씩 실행됨
+let serial = DispatchQueue(label: "com.example.serial", qos: .userInitiated)
+
+// Concurrent Queue — 작업이 동시에 실행됨
+let concurrent = DispatchQueue(label: "com.example.concurrent",
+                               qos: .utility,
+                               attributes: .concurrent)
+```
+
+**GCD의 문제점: 스레드 폭발 (Thread Explosion)**
+
+GCD는 `await`가 없기 때문에 작업이 블로킹되면 스레드가 그대로 잠긴다.
+블로킹된 스레드 수가 늘어나면 GCD는 새 스레드를 계속 생성하고, 결국 수백 개의 스레드가 생길 수 있다.
+
+```swift
+// ⚠️ 위험한 패턴 — 세마포어가 스레드를 블로킹
+DispatchQueue.global().async {
+    semaphore.wait()   // 이 스레드는 여기서 잠김
+    doWork()
+    semaphore.signal()
+}
+```
+
+**Priority Inversion (우선순위 역전) 자동 해결**
+
+낮은 QoS 작업이 높은 QoS 작업이 필요한 자원을 점유하고 있을 때 역전 현상이 발생한다.
+GCD는 이를 자동으로 감지하여 낮은 QoS 작업의 우선순위를 일시적으로 높여준다.
+
+---
+
+### Swift Concurrency
+
+Swift 5.5에서 도입된 `async/await`는 GCD 위가 아닌 **Swift Concurrency Runtime** 위에서 동작하는 별도의 레이어
+
+**동작 원리**
+
+```
+async 함수 호출
+      ↓
+Task 생성 (우선순위 포함)
+      ↓
+Cooperative Thread Pool   ← CPU 코어 수만큼만 스레드 유지
+      ↓
+await 지점에서 실행 중단 → 스레드 반환
+      ↓
+재개 조건 충족 시 다시 스레드 배정
+```
+
+1. `await`를 만나면 현재 실행을 **중단(suspend)** 하고 스레드를 즉시 반환
+2. 반환된 스레드는 다른 Task가 즉시 사용 가능
+3. 재개 조건(I/O 완료, 타이머 등)이 충족되면 다시 스레드를 배정받아 이어서 실행
+4. 전체 스레드 수는 **CPU 코어 수에 수렴** → 스레드 폭발 없음
+
+```swift
+// Task 우선순위는 QoS와 매핑됨
+Task(priority: .userInitiated) {
+    let data = await fetchData()   // await: 스레드 반환 후 재개
+    updateUI(data)
+}
+
+// Actor — 동시 접근을 런타임이 직렬화 보장
+actor Counter {
+    var value = 0
+    func increment() { value += 1 }  // 한 번에 하나의 Task만 실행
+}
+
+// TaskGroup — 여러 작업을 병렬 실행 후 결과 수집
+let results = await withTaskGroup(of: Int.self) { group in
+    for i in 0..<10 {
+        group.addTask { await compute(i) }
+    }
+    return await group.reduce(0, +)
+}
+```
+
+**GCD와의 핵심 차이**
+
+| 항목              | GCD                                 | Swift Concurrency                      |
+| ----------------- | ----------------------------------- | -------------------------------------- |
+| **스케줄링 방식** | 선점형 (Preemptive)                 | 협력형 (Cooperative)                   |
+| **스레드 블로킹** | 블로킹 시 스레드 잠김               | `await`에서 스레드 반환                |
+| **스레드 수**     | 작업량에 따라 수백 개까지 증가 가능 | CPU 코어 수에 수렴                     |
+| **우선순위 역전** | GCD가 자동 감지 후 조정             | 런타임이 Task 우선순위 전파로 해결     |
+| **동시성 안전**   | 개발자가 직접 락/세마포어 관리      | Actor가 런타임 수준에서 보장           |
+| **컨텍스트 유지** | 클로저 캡처로 수동 관리             | `async` 함수가 자동으로 실행 맥락 유지 |
+
+> **정리**: GCD는 스레드 풀을 추상화한 선점형 모델, Swift Concurrency는 스레드 개념 자체를 숨기고 `await` 지점에서 자발적으로 양보하는 협력형 모델이다. 현재 Apple은 신규 코드에 Swift Concurrency 사용을 권장하고 있다.
