@@ -98,7 +98,7 @@ b()
 | **signal 기억 여부** | 기억됨. 대기자 없어도 S++ 유지                                   | 해당 없음                                        | 기억 안 됨. 대기자 없으면 소멸                                          |
 | **iOS 키워드**       | `DispatchSemaphore`                                              | `NSLock`, `os_unfair_lock`, `pthread_mutex`      | `NSCondition`, `NSConditionLock`                                        |
 
-> [!TIP] **signal의 '기억' 여부**  
+> **signal의 '기억' 여부**  
 > Semaphore의 `signal()`은 S++로 **기억됩니다**. 대기자가 없어도 카운트가 올라가므로, 나중에 오는 스레드가 바로 통과합니다.  
 > 반면 Monitor의 `condition.signal()`은 **기억되지 않습니다**. 대기자가 없으면 그냥 소멸되며, 이후 `wait()`을 호출하는 스레드는 그대로 대기합니다.
 >
@@ -156,7 +156,7 @@ semaphore.wait() // 완료될 때까지 현재 스레드 블락
 // result 사용 가능
 ```
 
-> [!WARNING] 메인 스레드에서 `wait()`하면 UI가 멈추므로 반드시 백그라운드에서만 사용해야 합니다. Swift Concurrency 환경에서는 `withCheckedContinuation`이 더 적합합니다.
+> 메인 스레드에서 `wait()`하면 UI가 멈추므로 반드시 백그라운드에서만 사용해야 합니다. Swift Concurrency 환경에서는 `withCheckedContinuation`이 더 적합합니다.
 
 ### iOS에서의 Monitor<!-- {"fold":true} -->
 
@@ -193,7 +193,7 @@ func consume() -> Int {
 }
 ```
 
-> [!NOTE] `condition.wait()`은 호출 즉시 내부적으로 lock을 해제하므로, 다른 스레드가 Monitor에 진입할 수 있습니다. 깨어나면 자동으로 lock을 다시 획득합니다.
+> `condition.wait()`은 호출 즉시 내부적으로 lock을 해제하므로, 다른 스레드가 Monitor에 진입할 수 있습니다. 깨어나면 자동으로 lock을 다시 획득합니다.
 
 #### Swift Actor — 현대적인 Monitor
 
@@ -303,7 +303,7 @@ while !tryLock() { // CPU를 계속 사용하며 spin }
 if !tryLock() { sleep() // 컨텍스트 스위칭 발생 }
 ```
 
-> [!NOTE] **Mutex가 Busy waiting 문제를 가지고 있다고 책에서 본 것 같은데?**  
+> **Mutex가 Busy waiting 문제를 가지고 있다고 책에서 본 것 같은데?**  
 > -> Spinlock은 의도적으로, 항상 busy waiting을 선택한 것이고,  
 > 현대 OS의 Mutex는 busy waiting을 **sleep으로 대체**함.
 
