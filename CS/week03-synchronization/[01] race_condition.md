@@ -213,13 +213,15 @@ Task.detached(priority: .userInitiated) {
 1. Xcode `Edit Scheme` -> `Run` -> `Diagnostics` -> `Thread Sanitizer` 활성화
 2. 위 `UnsafeCounter` 경로 실행
 3. 경고에서 충돌 변수와 접근 스택(읽기/쓰기 스레드)을 확인
+
 ![alt text](references/assets/synchronization/result_tsan.png)
 
 #### (2) Instruments에서 실행 시간 비교
 1. `Product` -> `Profile` -> `Loging` 선택
 2. `unsafeRun`, `safeRun` signpost 구간 필터링
 3. Duration 통계로 `unsafeRun` vs `safeRun` 비교
-![alt text](references/assets/synchronization/instruments_duration_safe_or_unsafe.png.png)
+
+![alt text](references/assets/synchronization/instruments_duration_safe_or_unsafe.png)
 
 ### 4) 방어 전략(우선순위)
 1. 공유 가변 상태 자체를 줄인다(불변/값 타입 우선)
