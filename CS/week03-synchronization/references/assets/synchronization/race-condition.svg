@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="320" viewBox="0 0 980 320">
+  <rect width="980" height="320" fill="#f8fafc"/>
+  <text x="30" y="35" font-family="Arial" font-size="22" fill="#0f172a">Race Condition (Lost Update) Interleaving</text>
+
+  <line x1="220" y1="70" x2="220" y2="290" stroke="#475569" stroke-width="2"/>
+  <line x1="610" y1="70" x2="610" y2="290" stroke="#475569" stroke-width="2"/>
+  <text x="180" y="60" font-family="Arial" font-size="16" fill="#1e293b">Thread A</text>
+  <text x="570" y="60" font-family="Arial" font-size="16" fill="#1e293b">Thread B</text>
+
+  <rect x="120" y="90" width="200" height="38" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="130" y="114" font-family="Arial" font-size="14" fill="#1e3a8a">read x (=0)</text>
+
+  <rect x="510" y="130" width="200" height="38" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="520" y="154" font-family="Arial" font-size="14" fill="#14532d">read x (=0)</text>
+
+  <rect x="120" y="170" width="200" height="38" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="130" y="194" font-family="Arial" font-size="14" fill="#1e3a8a">x = x + 1 (local=1)</text>
+
+  <rect x="510" y="210" width="200" height="38" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="520" y="234" font-family="Arial" font-size="14" fill="#14532d">x = x + 1 (local=1)</text>
+
+  <rect x="120" y="250" width="200" height="38" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="130" y="274" font-family="Arial" font-size="14" fill="#1e3a8a">write x (=1)</text>
+
+  <rect x="510" y="250" width="200" height="38" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="520" y="274" font-family="Arial" font-size="14" fill="#14532d">write x (=1)</text>
+
+  <line x1="320" y1="109" x2="510" y2="149" stroke="#64748b" stroke-width="2" stroke-dasharray="6 5"/>
+  <line x1="710" y1="149" x2="320" y2="189" stroke="#64748b" stroke-width="2" stroke-dasharray="6 5"/>
+  <line x1="320" y1="189" x2="510" y2="229" stroke="#64748b" stroke-width="2" stroke-dasharray="6 5"/>
+
+  <rect x="740" y="95" width="210" height="110" rx="10" fill="#fff7ed" stroke="#f97316"/>
+  <text x="755" y="122" font-family="Arial" font-size="15" fill="#7c2d12">Expected: x = 2</text>
+  <text x="755" y="147" font-family="Arial" font-size="15" fill="#7c2d12">Actual: x = 1</text>
+  <text x="755" y="172" font-family="Arial" font-size="15" fill="#7c2d12">Lost Update!</text>
+</svg>
