@@ -1,47 +1,62 @@
-## WEEK 4 — Deadlock + Blocking & I/O 사고
+## WEEK 4 — Deadlock + Blocking + Memory Management
 
 ### 📖 학습 키워드
+#### 동시성 문제
 1. Deadlock 조건
 2. Deadlock 해결 전략
 3. Blocking vs Non-Blocking
-   * I/O Blocking
-   * 왜 스레드가 묶이는가
-   * 네트워크 호출과 Blocking
-   * 비동기 모델 필요성
+    - Blocking 의미
+    - I/O Blocking
+    - 네트워크 호출과 Blocking
+    - 왜 스레드가 묶이는가
+
+#### 메모리 관리
+1. Logical vs Physical Address
+2. Paging 개념
+    - Page / Frame
+    - 등장 배경
+3. Virtual Memory
+    - 필요성
+    - Page Fault 개념
 
 ### 📢 발표 주제
 #### ① Deadlock 발생 조건
 
 - Mutual Exclusion
 - Hold & Wait
+- No Preemption
 - Circular Wait
+- 왜 이 조건들이 동시에 필요할까
 
 #### ② Deadlock 해결 전략
 
 - Prevention
 - Avoidance
 - Detection
+- Recovery 전략
 
 #### ③ Blocking vs Non-Blocking 본질
 
 - Blocking 의미
-- 왜 문제인가
-- 자원 관점 해석
+- 자원 대기 관점
+- 스레드 정체 현상
+- 왜 성능 문제가 되는가
 
 #### ④ I/O Blocking 문제
 
 - 디스크 / 네트워크 공통 구조
-- 스레드 정체 현상
-- 대기 메커니즘
+- 스레드 대기 메커니즘
+- OS가 대기를 처리하는 방식
 
-#### ⑤ 네트워크 호출 & 스레드 문제
+#### ⑤ Logical vs Physical Address
 
-- 왜 UI가 멈추는가
-- 비동기 필요성
-- 실제 앱 문제 연결
+- 왜 주소 변환이 필요한가
+- 프로그램이 보는 주소 vs 실제 메모리
+- OS와 MMU 역할
 
-#### ⑥ 비동기 모델 등장 이유
+#### ⑥ Paging & Virtual Memory
 
-- Event Loop 사고
-- 비동기 구조 필요성
-- 성능 관점
+- Paging 등장 배경
+- Page / Frame 구조
+- Page Table
+- Page Fault 비용
