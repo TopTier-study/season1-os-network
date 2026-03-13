@@ -20,7 +20,7 @@
     - Page Fault 개념
 
 ### 📢 발표 주제
-#### ① Deadlock 발생 조건
+#### ① Deadlock 발생 조건 - 상유
 
 - Mutual Exclusion
 - Hold & Wait
@@ -28,33 +28,33 @@
 - Circular Wait
 - 왜 이 조건들이 동시에 필요할까
 
-#### ② Deadlock 해결 전략
+#### ② Deadlock 해결 전략 - 지연
 
 - Prevention
 - Avoidance
 - Detection
 - Recovery 전략
 
-#### ③ Blocking vs Non-Blocking 본질
+#### ③ Blocking vs Non-Blocking 본질 - 선재
 
 - Blocking 의미
 - 자원 대기 관점
 - 스레드 정체 현상
 - 왜 성능 문제가 되는가
 
-#### ④ I/O Blocking 문제
+#### ④ I/O Blocking 문제 - 귀로
 
 - 디스크 / 네트워크 공통 구조
 - 스레드 대기 메커니즘
 - OS가 대기를 처리하는 방식
 
-#### ⑤ Logical vs Physical Address
+#### ⑤ Logical vs Physical Address - 성국
 
 - 왜 주소 변환이 필요한가
 - 프로그램이 보는 주소 vs 실제 메모리
 - OS와 MMU 역할
 
-#### ⑥ Paging & Virtual Memory
+#### ⑥ Paging & Virtual Memory - 윤서
 
 - Paging 등장 배경
 - Page / Frame 구조
