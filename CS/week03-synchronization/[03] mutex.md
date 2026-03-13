@@ -224,6 +224,7 @@ func increment() {
 ### Swift의 Mutex
 > [Modern Swift Lock: Mutex & the Synchronization Framework](https://www.avanderlee.com/concurrency/modern-swift-lock-mutex-the-synchronization-framework/)
 > https://medium.com/@swagati/%EB%AE%A4%ED%85%8D%EC%8A%A4-swift-concurrency-13-e246e5f5fd56
+
 기존의 Swift에서는 따로 뮤텍스를 제공하지 않았다.
 그러나 Swift 6 / iOS 18에서 Synchronization 프레임워크가 도입되면서 Mutex 타입이 추가되었다.
 (WWDC 24에서 발표)
