@@ -107,13 +107,15 @@ OSSpinLockUnlock(&lock)
 1. task 2이 공유 자원에 접근하기 위하여 lock 획득
 2. 스케줄러에 의해 우선 순위가 더 높은 task 1이 수행됨.
 3. task 1은 task 2이 가진 lock을 획득하기 위하여 기다림. (spin)
-4. lock을 풀 task 2는 실행되지 못함. / 순서가 밀림.
+4. lock을 풀어야 하는 task 2가 실행 기회를 얻지 못함.
 
 -> 이러한 문제로 인해 OSSpinLock은 deprecated됨.
 
 #### os_unfair_lock
 이후 Apple이 OSSpinLock 대신 만든 것이 os_unfair_lock이다. (이건 spinlock 아님)
 
+- **먼저 기다린 스레드가 반드시 먼저 락을 얻는 공정성을 보장하지 않음.**
+- 공정성보다 성능을 우선하는 방향으로 설계되어 있음.
 - 동작
   - lock 획득 시도
     - 성공 -> 실행
@@ -224,6 +226,7 @@ func increment() {
 ### Swift의 Mutex
 > [Modern Swift Lock: Mutex & the Synchronization Framework](https://www.avanderlee.com/concurrency/modern-swift-lock-mutex-the-synchronization-framework/)
 > https://medium.com/@swagati/%EB%AE%A4%ED%85%8D%EC%8A%A4-swift-concurrency-13-e246e5f5fd56
+
 기존의 Swift에서는 따로 뮤텍스를 제공하지 않았다.
 그러나 Swift 6 / iOS 18에서 Synchronization 프레임워크가 도입되면서 Mutex 타입이 추가되었다.
 (WWDC 24에서 발표)
@@ -271,7 +274,7 @@ CPU atomic instruction
 
 #### 사용하는 경우
 - 매우 짧은 공유 상태를 보호하고자 하는 경우
-- 동기 코드 기반 API에서
+- 동기 코드 기반 API인 경우
 - actor로 바꾸기엔 과한 저수준의 자료구조인 경우
 - 성능이 민감한 경우
 
