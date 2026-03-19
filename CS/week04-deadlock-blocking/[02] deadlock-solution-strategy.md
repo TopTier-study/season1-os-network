@@ -359,7 +359,7 @@ lock.unlock()
   ```
 
 ## 3. 의문 / 논점
-### Swift Concurrency는 Deadlock 문제를 해결할 수 있을까?
+### 3-1) Swift Concurrency는 Deadlock 문제를 해결할 수 있을까?
 Swift Concurrency는 GCD와 달리 **cooperative thread pool**을 사용한다.
 
 - 작업이 await에 도달 시
@@ -378,3 +378,51 @@ Swift Concurrency는 GCD와 달리 **cooperative thread pool**을 사용한다.
 
 -> 따라서 concurrency 모델이 바뀌어도 Deadlock 문제는 완전히 사라지지 않는다.
 
+### 3-2) Deadlock을 해결하면 동시성 문제는 모두 해결? - 그럴리 없음.
+실제 시스템에서는 다음과 같은 유사하지만 다른 문제들이 발생할 수 있다.
+다음 문제들은 모두 **작업이 정상적으로 진행되지 않는 상태**를 만들지만 원인이 다르다.
+
+#### Deadlock
+: 서로가 가진 자원을 기다리며 영원히 진행하지 못하는 상태
+
+#### Thread Starvation
+: 특정 스레드가 계속 실행 기회를 얻지 못하는 상태
+
+- 시스템은 계속 동작
+- 다른 작업은 정상 실행
+- 특정 작업만 계속 대기
+
+```
+// 예시
+High priority task가 계속 실행
+↓
+Low priority task가 계속 대기
+```
+
+- iOS에서 발생 가능한 상황
+  - QoS priority 차이
+  * lock contention이 심한 경우
+  * 높은 priority 작업이 계속 큐를 점유하는 경우
+
+#### Livelock
+: 스레드들이 계속 동작하지만 실제 작업은 진행되지 않는 상태
+
+- Deadlock처럼 멈추지 X
+
+```
+// 예시
+Thread A → lock 실패 → retry
+Thread B → lock 실패 → retry
+```
+- 서로 양보하면서 계속 재시도 -> **실제 작업은 진행되지 않음.**
+
+| 문제         | 상태             | 시스템 동작           |
+|------------|----------------|------------------|
+| Deadlock   | 서로 자원을 기다림     | 완전히 멈춤           |
+| Starvation | 특정 스레드만 실행 못함  | 시스템은 계속 동작       |
+| Livelock   | 계속 동작하지만 진전 없음 | CPU는 사용하지만 결과 없음 |
+
+> 동시성 설계에서는 Deadlock을 피하는 것뿐만 아니라 다음을 함께 고려해야 한다.
+> - lock contention 최소화
+> - 적절한 priority 관리
+> - retry 정책 설계
