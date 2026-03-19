@@ -42,6 +42,8 @@ I/O 작업의 경우, 디스크를 읽거나 네트워크 패킷을 대기하는
 - Waiting Queue에 있던 스레드가 Ready Queue로 들어간다. 
 ## 2. 탐구 내용 (실무 / iOS 연결)
 ### IBM blocking/sync
+<img width="386" height="225" alt="image" src="https://github.com/user-attachments/assets/e8042fe4-5fdb-49d2-b9ab-c3b7ab173b2b" />
+
 위 2 * 2 blocking/sync 관계에서 sync+blocking, async+non-blocking은 어쩌면 가장 일반적인 내용이다. 동기 작업이란 위 관점에 단순히 callee가 caller의 시간에 맞추어 답변을 제공한다고 볼 수 있지만, 실제로는 caller가 blocking되는 상황이 가장 흔하며, 대기하다가 동기적으로 결과를 회수하는 것까지가 동기 작업으로 보인다. 비동기 작업 역시 마찬가지로, callee가 caller에 상관 없이 결과를 제공하는 것이지만, 실제로 기대하는 바는 caller가 호출 이후에 자신의 작업을 계속 수행하는 것을 기대한다. 
 #### 관점 설정
 서술 중 이해 과정에서 사용된 예시 때문에, 또는 용어마다 더 널리 사용되는 분야가 따로 있기 때문에 다른 설명이 섞일 수 있으나 기본적으로는 아래의 관점에서 보는 것이 IBM의 설명이다.
@@ -49,10 +51,25 @@ I/O 작업의 경우, 디스크를 읽거나 네트워크 패킷을 대기하는
 - I/O 과정을 설명.
 - Application이 Caller, Kernel이 Callee
 #### Synchronous blocking I/O
+<img width="538" height="340" alt="image" src="https://github.com/user-attachments/assets/7627b9ee-d998-4e9b-b953-d9277464beda" />
+
 read, write과 같은 시스템 호출. 
 유저가 read를 호출했다 하면 커널은 데이터가 사용자 버퍼에 복사되기 전까지 리턴하지 않고 유저 프로세스는 작업을 중단한 채 대기한다.
-클라이언트가 여러 개인 서버의 경우, 클라이언트가 I/O에 들어가면 다른 클라이언트가 작업을 못하게 되므로, 프로세스나 스레드를 여러 개 두어야 한다. 다만 클라이언트 수만큼 스레드가 증가할 우려가 있따.
-#### Polling
+클라이언트가 여러 개인 서버의 경우, 클라이언트가 I/O에 들어가면 다른 클라이언트가 작업을 못하게 되므로, 프로세스나 스레드를 여러 개 두어야 한다. 다만 클라이언트 수만큼 스레드가 증가할 우려가 있다.
+- iOS 예시
+	- Data(contentsOf: URL)
+	- DispatchQueue.main.sync
+#### Asynchronous Non-Blocking
+<img width="481" height="340" alt="image" src="https://github.com/user-attachments/assets/9e34d91a-6f8b-41d0-9b67-1725224127bd" />
+
+가장 이상적인 처리 방식. 
+I/O의 속도는 일반적으로 느리기 때문에 그 시간 차이를 잘 활용하면 효율적인 작업을 수행할 수 있다.
+- iOS 예시
+	- URLSession.shared.dataTask
+	- group.notify(): DispatchGroup 비동기 작업 완료 시 콜백 호출.
+#### Synchronous Non-blocking: Polling
+<img width="474" height="340" alt="image" src="https://github.com/user-attachments/assets/d2762a28-63a0-44c7-8f8c-43b168d9ddfa" />
+
 그렇다면 다른 조합은 어떨까?
 sync-nonblocking의 조합, 즉 폴링 방식은 callee의 결과를 caller가 지속적으로 확인하며 결과를 수집하려는 형태이다. 왜 그래야할까?
 HTTP 네트워크의 방식은 단방향 통식이다. 클라이언트가 서버에 요청을 보내면 서버가 응답을 보내는 방식이다. 그런데 서버가 먼저 선제적으로 데이터를 업데이트해야되는 상황이라면? 클라이언트에서 서버가 정보를 업데이트했는지 꾸준히 확인하는 방식 뿐이다. 이것에 Polling이다. 
@@ -60,6 +77,8 @@ HTTP 네트워크의 방식은 단방향 통식이다. 클라이언트가 서버
 OS 커널 레벨에서도 non-blocking 소켓에 대해 메시지가 도착할 때까지 read() 시스템 콜을 던져 CPU를 소모하는 방식이다.
 #### Asynchronous blocking I/O
 연관: [[멀티플렉싱(Multiplexing)]]
+<img width="541" height="340" alt="image" src="https://github.com/user-attachments/assets/e84d8f23-7e36-4cfd-91a9-56042871d071" />
+
 IBM에서는 Asynchronous blocking을 설명하며 select 시스템콜을 예로 들었다.
 ```
 In this model, non-blocking I/O is configured, and then the blocking `select` system call is used to determine when there's any activity for an I/O descriptor.
@@ -67,6 +86,8 @@ In this model, non-blocking I/O is configured, and then the blocking `select` 
 그러니까 I/O가 non-blocking으로 동작하고, 이를 blocking system call인 select가 I/O descriptor에서 활동을 읽어온다는 것이다.
 헷갈리는 부분은 위에서 설정한 관점에서 어긋난다는 것이다. 어플리케이션을 caller, 커널을 callee로 생각한다면 select가 결국에는 blocking에 sync로 동작하기 때문에 그렇게 이해하는 것이 맞게 보인다. 
 IBM이 말하고자 하는 것은 I/O가 마무리되기 전까지 어플리케이션이 작동할 것은 없기 때문에 blocking으로 보고, 다만 I/O descriptor 쪽에서는 non-blocking으로 작동하며 변화를 descriptor에 기록하기 때문에 일련의 과정을 async로 보는 것 같다.
+- iOS 예시
+	DispatchGroup을 이용해 async로 네트워크 작업을 시작하고, group.wait()으로 대기하는 상황. 실제 wait은 sync blocking으로 동작하나 아키텍처 관점에서 async blocking으로 볼 수 있다. 
 #### 멀티플렉싱 관련 정리
 - 멀티플렉싱이란
 	어플리케이션이 수많은 소켓을 통제하기 위해서 소켓 수만큼의 스레드를 만들거나, 소켓을 전부 순회함으로 인해 생기는 메모리나 CPU의 문제를 해결하기 위해 생긴 방식.
