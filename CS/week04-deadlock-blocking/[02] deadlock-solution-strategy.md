@@ -54,7 +54,7 @@
 - **모든 자원을 선점할 수 있는 것은 아니기 때문에 범용성이 떨어진다.**
   - 예) 프린터가 한 프로세스에 대해서 사용되고 있는데 다른 프로세스가 이를 빼앗아 프린터를 갑자기 사용할 수는 없다.
 
-#### d. Circular Wait 조건 방지
+#### d. Circular Wait 조건 방지 (Lock Ordering)
 - 모든 자원에 번호를 붙이고 오름차순으로 자원 할당 -> **한 방향으로만 자원을 요구**할 수 있도록 한다.
 - 시스템 내의 수많은 자원에 **모두 번호를 붙이는 것이 어렵고**, **특정 자원에 대해 활용률이 떨어질 수 있다.**
 
@@ -275,6 +275,69 @@ queue.async {
 > **정리**
 > OS에서는 Deadlock을 **runtime 알고리즘으로 탐지하거나 복구할 수 있다.** 
 > 하지만 GCD 등 애플리케이션 레벨에서는 Deadlock을 자동으로 탐지하거나 복구하는 시스템이 없기 때문에 **설계 단계에서 예방하는 방식이 대부분 사용된다.**
+
+### iOS / 실무에서의 Deadlock 예방 전략
+#### 1. Lock Ordering 규칙
+- 실무에서는 Deadlock을 방지하기 위해 모든 lock 획득 순서를 고정하는 규칙(Lock Ordering Rule)을 만들어 사용한다.
+  - 예) `DB lock → Cache lock → Network lock`
+
+#### 2. GCD Deadlock 해결 전략: sync -> async 전환 (blocking 제거)
+- `DispatchQueue.main.sync → DispatchQueue.main.async`
+- `group.wait → group.notify`
+
+#### 3. Actor 기반 동기화
+- 기존) lock, mutex, serial queue -> lock ordering 관리 필요
+- actor 사용 시
+  - lock 직접 관리 필요 X
+  - actor executor가 직렬 실행 보장
+- Apple도 actor 사용 권장
+
+#### 4. Critical Section 최소화
+- 락을 오래 잡고 있으면 경쟁 상태 증가 + 데드락 확률 증가
+
+👎🏻
+```swift
+lock.lock()
+
+// 중간에 긴 작업이 많음.
+network request
+disk I/O
+heavy calculation
+
+lock.unlock()
+```
+
+👍🏻
+```swift
+let value = compute()
+
+lock.lock()
+sharedData = value	// 중간 작업 최소화
+lock.unlock()
+```
+
+#### 5. Timeout / Fail-Fast 전략
+- OS recovery 전략
+- `lock(before: timeout)`
+  - 실패 시 retry, fallback, log
+- 사용되는 곳
+  - DB connection
+  * distributed lock
+  * network lock
+
+#### 6. Lock 대신 Serial Queue 사용
+- NSLock, mutex 대신 **serial dispatch queue 사용**하기
+
+#### 7. Xcode 도구로 Deadlock 디버깅
+- Xcode tools
+  - Thread Sanitizer
+  - Main Thread Checker
+  - Debug Navigator (thread state)
+- Deadlock 의심 증상
+  ```
+  __DISPATCH_WAIT_FOR_QUEUE__
+  _dispatch_sync_f_slow
+  ```
 
 ## 3. 의문 / 논점
 ### Swift Concurrency는 Deadlock 문제를 해결할 수 있을까?
