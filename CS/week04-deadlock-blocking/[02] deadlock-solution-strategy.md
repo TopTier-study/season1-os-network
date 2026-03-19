@@ -86,7 +86,9 @@ lock A → lock B
 : Deadlock이 발생할 가능성이 있는 상태를 **미리 계산하여 회피하는 방식**
 
 > **안전 상태**: 모든 프로세스가 정상적으로 자원을 할당받고 종료될 수 있는 상태
+> 
 > **안전 순서열**: 특정 순서로 할당, 실행 및 종료를 했을 때 데드락이 발생하지 않는 안전한 순서
+> 
 > **불안전 상태**: 안전 순서열이 없고 데드락이 발생할 가능성이 있는 상태
 
 - ’한정된 자원을 무분별하게 할당해서 Deadlock이 발생했다’고 간주 -> 배분할 수 있는 자원의 양을 고려하여 **Deadlock 이발생하지 않을 만큼만 자원을 배분**
@@ -159,11 +161,15 @@ lock A → lock B
   3. 하지만 시리얼 큐는 A가 끝나기 전에는 B를 실행할 수 없다.
   4. A는 B를 기다리고, B는 A가 끝나야 실행된다.
   5. **self-deadlock** (reentrant sync 문제)
+ 
 
-![](%5B02%5D%20deadlock-solution-strategy/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA,%202026-03-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%208.36.38.png)
+<img width="1159" height="585" alt="스크린샷, 2026-03-19 오후 8 36 38" src="https://github.com/user-attachments/assets/ae9ec37d-2b1f-4e6a-9c33-546d0e43ba14" />
+
 
 -> 즉 **시리얼 큐에서 sync 호출을 중첩하는 경우** 같은 큐가 자기 자신이 끝나기를 기다리게 되어 deadlock이 발생하게 된다.
-![](%5B02%5D%20deadlock-solution-strategy/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202026-03-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%206.02.59.png)
+
+<img width="1223" height="790" alt="스크린샷 2026-03-19 오후 6 02 59" src="https://github.com/user-attachments/assets/a1c887e0-1913-4f61-890a-f0b86802339d" />
+
 
 #### 2) 메인 큐에서 발생하는 Deadlock
 **메인 큐도 시리얼 큐**이다. 특별히 UI 작업을 담당하고 메인 스레드와 강하게 연결되어 있다는 특징을 가진다.
@@ -176,9 +182,14 @@ lock A → lock B
 5. deadlock (**메인 실행 흐름 자체가 자기 자신을 기다리는 상태**)
 
 - **이미 메인 스레드인 곳에서 main.sync**
-![](%5B02%5D%20deadlock-solution-strategy/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202026-03-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%206.04.48.png)
+
+<img width="1229" height="888" alt="스크린샷 2026-03-19 오후 6 04 48" src="https://github.com/user-attachments/assets/a410c5ed-58c8-43c1-83cb-a034a1f81fd6" />
+
 - **백그라운드 스레드에서 main.sync**
-![](%5B02%5D%20deadlock-solution-strategy/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202026-03-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%206.09.36.png)
+
+<img width="1178" height="851" alt="스크린샷 2026-03-19 오후 6 09 36" src="https://github.com/user-attachments/assets/3114c9d5-87dc-4b29-9afc-92bda1a5a0e5" />
+
+
 - **main.async**는 문제 X
   - 현재 작업은 기다리지 않고 바로 끝나며, 큐는 다음 작업을 실행할 수 있기 때문이다.
 
@@ -192,6 +203,7 @@ lock A → lock B
 #### concurrent queue에서는?
 > concurrent queue = 여러 작업을 동시에 실행할 수 있는 큐
 > (작업의 시작 순서만 보장, 실행 완료 순서는 보장하지 X)
+
 같은 concurrent queue에 sync를 보내나고 해서 serial queue처럼 즉시 self-deadlock이 발생하지는 않는다.
 **큐가 현재 작업 외에 다른 작업도 실행할 수 있기 때문이다.**
 
@@ -208,7 +220,9 @@ lock A → lock B
   > 해결: 큐 간 호출은 async로 설계 / 단방향 호출 구조 유지
   ```
 - barrier 작업과 대기 구조를 잘못 섞은 경우
-  ![](%5B02%5D%20deadlock-solution-strategy/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202026-03-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%206.17.16.png)
+
+<img width="1143" height="923" alt="스크린샷 2026-03-19 오후 6 17 16" src="https://github.com/user-attachments/assets/db6e3a1b-8cde-4e3a-bde2-d1e983406433" />
+
   1. queue는 concurrent queue다.
   2. barrier 작업이 시작된다.
   3. barrier는 **자기 자신이 실행되는 동안 그 큐에서 다른 작업이 동시에 실행되면 안 된다.**
@@ -261,10 +275,15 @@ queue.async {
 7. group.wait()가 풀리고 바깥 작업이 계속 진행
 
 -> 정상 동작
-![](%5B02%5D%20deadlock-solution-strategy/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202026-03-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%206.26.33.png)
+
+<img width="1052" height="854" alt="스크린샷 2026-03-19 오후 6 26 33" src="https://github.com/user-attachments/assets/43d8a05c-a331-4e15-bf0d-3fd9d56a3f6f" />
+
 - 조건별 동작 결과
-![](%5B02%5D%20deadlock-solution-strategy/concurrent%20queue%20deadlock.png)
-![](%5B02%5D%20deadlock-solution-strategy/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202026-03-19%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%206.57.37.png)
+
+<img width="4308" height="1562" alt="concurrent queue deadlock" src="https://github.com/user-attachments/assets/7b23f7c9-4754-48b9-83f8-bc464a75edb4" />
+
+<img width="1129" height="834" alt="스크린샷 2026-03-19 오후 6 57 37" src="https://github.com/user-attachments/assets/84ed84fb-bef7-45d2-b619-c461c87a5bec" />
+
 
 결론
 - deadlock의 본질은 async/sync X, **’현재 실행 중인 작업이 자기 자신이 끝나야 실행 가능한 작업을 기다리는지’**이다.
