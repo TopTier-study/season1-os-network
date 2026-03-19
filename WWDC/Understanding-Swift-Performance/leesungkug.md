@@ -30,7 +30,7 @@
 - **인상적이었던 포인트**
   - "Struct는 값 타입이니까 무조건 스택!"이라고 맹신하면 안 됨. Struct 안에 Heap을 쓰는 요소(String 등)가 여러 개면 배보다 배꼽(레퍼런스 카운팅 오버헤드)이 더 커질 수 있다.
 
-  ![alt text](references/assets/leesungkig_copy_on_write.png)
+  ![alt text](references/assets/leesungkig_copy_onwrite.png)
 
   - 큰 크기의 구조체가 Protocol 타입에 담길 때 일어나는 힙 할당(2번 씩 일어나는 참사)을 막기 위해, 내부 데이터를 클래스(`LineStorage`)로 빼고 `isKnownUniquelyReferenced`를 써서 **Copy-On-Write(COW)**를 직접 구현하는 기법을 사용할 수 있음.
   - 제네릭에서 `Pair<Line, Line>`을 쓰면, 특수화 덕분에 Existential Container 없이 구조체 인라인에 프로퍼티를 욱여넣어서 힙 할당을 없엘 수 있다.
@@ -39,7 +39,21 @@
   - 앱에서 캐시 딕셔너리 Key로 `String`을 흔하게 쓰는데, **String은 내용물을 Heap에 저장하기 때문에 캐시에 히트해도 계속 힙 할당 오버헤드가 발생함**. 이를 고정 크기의 `UUID` 구조체나 `Enum`으로 대체하면 힙 할당도 싹 없애고 타입 안정성도 극대화할 수 있음.
 
 ## 3. 준비한 질문
+- **Q1.** Struct 안에 참조 타입이 많아지면 오히려 Class보다 느려지는 현상을 막기 위해, COW(Copy-On-Write) 패턴 말고 실무에서 좀 더 간단하게 대처할 수 있는 설계적 대안(예: 프로퍼티 분리 등)이 있을까요?
+- **Q2.** Protocol 대신 Generic을 쓰면 특수화(Specialization) 덕분에 성능이 엄청 좋아지지만, 컴파일러가 선언부와 호출부를 같이 볼 수 있어야 최적화가 된다고 했습니다. 만약 파일이 다를 때 Whole Module Optimization(WMO)을 켜면 해결된다고 하는데, WMO 활성화로 인한 빌드 타임 증가 같은 트레이드오프는 없을까요?
+- **Q3.** `Pair(Point(), Line())`처럼 요소의 크기나 타입이 서로 다를 때는 결국 Protocol을 써야 다형성을 만족할 수 있는데, 이럴 땐 불가피하게 발생하는 Existential Container 힙 할당 오버헤드를 안고 가는 게 맞을까요?
 
+Q1
+
+COW 전에 먼저 데이터 경계를 다시 나누는 설계를 고려할 수 있습니다. 자주 복사되는 struct에는 가벼운 값만 두고, 무거운 참조 상태는 별도 객체나 저장소로 분리하면 ARC와 복사 비용을 줄일 수 있습니다.
+
+Q2
+
+WMO는 Generic 특수화와 인라이닝에 유리하지만, 대신 빌드 시간이 길어지고 개발 중 피드백 속도가 느려질 수 있는 트레이드오프가 있습니다. 그래서 보통 Release에서 더 적극적으로 활용합니다.
+
+Q3
+
+이질적인 타입을 한 컬렉션에 담아야 하면 existential 비용을 어느 정도 받아들여야 할 수 있습니다. 다만 항상 Protocol이 정답은 아니고, 가능한 경우엔 enum이나 generic으로 바꿔서 비용을 줄일 수 있는지 먼저 검토하는 게 좋습니다.
 
 ## 4. 토론 / 공유 내용 정리
 
