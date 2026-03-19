@@ -201,6 +201,7 @@ lock A → lock B
 #### concurrent queue에서는?
 > concurrent queue = 여러 작업을 동시에 실행할 수 있는 큐
 > (작업의 시작 순서만 보장, 실행 완료 순서는 보장하지 X)
+
 같은 concurrent queue에 sync를 보내나고 해서 serial queue처럼 즉시 self-deadlock이 발생하지는 않는다.
 **큐가 현재 작업 외에 다른 작업도 실행할 수 있기 때문이다.**
 
