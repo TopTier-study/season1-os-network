@@ -89,7 +89,8 @@ rld
 >   - packet aggregation
 >   - segmentation
 >   * retransmission
-> - 즉 OS가 **네트워크 상황에 맞게 packet을 재구성**함.
+> - 따라서 송신 측의 `send()` 호출 단위와 수신 측의 `receive()` 결과는 일치하지 않을 수 있음.
+> - 이 때문에 **메시지 구조는 Application Protocol에서 별도로 정의해야 한다**. -> OS가 **네트워크 상황에 맞게 packet을 재구성**함.
 >   - 이때 만약 메시지 경계를 보장했다면 `packet 처리 유연성 감소`, `성능 저하`, `프로토콜 확장성 감소` 발생
 > - 따라서 메시지 구조는 **Application Protocol에서 처리하도록 분리**하였다.
 > - 이 구조 덕분에 다양한 프로토콜이 TCP 위에서 동작할 수 있다.
@@ -136,14 +137,14 @@ IP
   - 연결 유지(Keep-Alive) 지원
   - 요청/응답 순차 처리로 성능 한계 존재
 - HTTP/2
-  - 단일 연결에서 다중 요청/응답 처리 (Multiplexing)
+  - 단일 TCP 연결에서 여러 요청/응답 스트림을 동시에 처리 (Multiplexing)
   - 헤더 압축 -> 대역폭 절약
   - 서버 푸시(Server Push) 지원
 - **문제점**
   - Head-of-line blocking (HOL Blocking)
-    - 앞의 데이터가 손실되거나 지연되면 뒤에 도착한 데이터도 순서 보장을 위해 전달되지 못하고 대기하는 문제
-    - TCP는 데이터 순서를 보장하기 때문에 앞선 데이터가 복구될 때까지 그 다음 데이터의 전달이 지연된다.
-      - 예시) packet a, b, c 전송 중 packet b가 손실된 경우 TCP는 packet c를 받아도 전달하지 X (순서를 보장해야 하기 때문에 packet b를 재전송한 후 packet c를 전달)
+    - 앞의 데이터가 손실되거나 지연되면 뒤에 도착한 데이터도 순서 보장을 위해 바로 전달되지 못하고 대기하는 문제
+    - TCP는 데이터 순서를 보장하기 때문에 앞선 데이터가 복구될 때까지 이후 데이터의 전달이 지연될 수 있다.
+    - **예시)** packet a, b, c 전송 중 packet b가 손실된 경우 TCP는 packet c를 받아도 애플리케이션에 바로 전달하지 X (순서를 보장해야 하기 때문에 packet b를 재전송한 후 packet c를 전달)
 - 연결 지연 (Handshake)
 - 패킷 손실 시 전체 스트림 지연
 
@@ -200,7 +201,7 @@ let task = URLSession.shared.dataTask(with: url)
 task.resume()
 ```
 
-- URLSession은 내부적으로 `HTTP → TLS → TCP → IP` 프로토콜 스택 사용
+- URLSession은 HTTPS 요청 시 내부적으로 `HTTP → TLS → TCP → IP` 프로토콜 스택 사용
 
 #### 2) Network.framework (TCP / UDP 레벨 네트워크 제어)
 : iOS에서 직접 프로토콜 구현하기
@@ -229,6 +230,8 @@ task.resume()
     ```
 - 이때 개발자가 **자신만의 Application Protocol**을 정의해야 함.
   - 예: `[length][payload]`
+
+> 즉 **URLSession**이 HTTP 중심의 고수준 API이고, **Network.framework**는 TCP/UDP 수준의 저수준 제어를 위한 API라고 볼 수 있다.
 
 ### 보안 통신을 위한 Protocol (TLS)
 HTTP 통신은 기본적으로 **평문(text) 전송**이다.
