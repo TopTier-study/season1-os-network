@@ -78,7 +78,7 @@
 
 <img width="513" height="403" alt="image" src="https://github.com/user-attachments/assets/1470d5f0-c6f1-4f73-8599-87927448ec81" />
 
-
+- [출처: 해양수산부 블로그](https://m.blog.naver.com/koreamof/221538025545)
 - 현재 전 세계 인터넷의 해외 연결망 트래픽의 90% 이상은 해저 광케이블을 통해 전달되고 있다.
 - 만약 광케이블이 끊어진다면?
     
