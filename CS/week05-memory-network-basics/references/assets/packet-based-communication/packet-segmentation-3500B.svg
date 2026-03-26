@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <rect width="1200" height="760" fill="#ffffff"/>
+
+  <text x="40" y="52" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#111827">Packet Segmentation Example (Consistent Dataset)</text>
+  <text x="40" y="84" font-family="Arial, sans-serif" font-size="19" fill="#374151">App Data = 3500B, Ethernet MTU = 1500B, IPv4 Header = 20B, TCP Header = 20B</text>
+
+  <rect x="40" y="112" width="1120" height="118" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="148" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#0f172a">Derived Values</text>
+  <text x="60" y="180" font-family="Arial, sans-serif" font-size="18" fill="#1f2937">MSS = MTU - (IP + TCP) = 1500 - 40 = 1460B</text>
+  <text x="60" y="208" font-family="Arial, sans-serif" font-size="18" fill="#1f2937">3500B is split into 3 TCP segments: 1460B, 1460B, 580B</text>
+
+  <text x="40" y="276" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#111827">Application Layer Message (3500B)</text>
+  <rect x="40" y="294" width="1050" height="66" rx="10" fill="#bfdbfe" stroke="#1d4ed8"/>
+  <text x="525" y="335" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1e3a8a">3500B Data</text>
+
+  <text x="40" y="415" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#111827">Packetized Transmission</text>
+
+  <text x="40" y="456" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Packet 1</text>
+  <rect x="160" y="430" width="100" height="42" fill="#fde68a" stroke="#92400e"/>
+  <rect x="260" y="430" width="100" height="42" fill="#fdba74" stroke="#9a3412"/>
+  <rect x="360" y="430" width="620" height="42" fill="#86efac" stroke="#166534"/>
+  <text x="210" y="457" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#111827">IP 20B</text>
+  <text x="310" y="457" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#111827">TCP 20B</text>
+  <text x="670" y="457" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#111827">Payload 1460B</text>
+  <text x="1000" y="457" font-family="Arial, sans-serif" font-size="16" fill="#374151">IP Packet Total: 1500B</text>
+
+  <text x="40" y="520" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Packet 2</text>
+  <rect x="160" y="494" width="100" height="42" fill="#fde68a" stroke="#92400e"/>
+  <rect x="260" y="494" width="100" height="42" fill="#fdba74" stroke="#9a3412"/>
+  <rect x="360" y="494" width="620" height="42" fill="#86efac" stroke="#166534"/>
+  <text x="210" y="521" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#111827">IP 20B</text>
+  <text x="310" y="521" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#111827">TCP 20B</text>
+  <text x="670" y="521" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#111827">Payload 1460B</text>
+  <text x="1000" y="521" font-family="Arial, sans-serif" font-size="16" fill="#374151">IP Packet Total: 1500B</text>
+
+  <text x="40" y="584" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Packet 3</text>
+  <rect x="160" y="558" width="100" height="42" fill="#fde68a" stroke="#92400e"/>
+  <rect x="260" y="558" width="100" height="42" fill="#fdba74" stroke="#9a3412"/>
+  <rect x="360" y="558" width="246" height="42" fill="#86efac" stroke="#166534"/>
+  <text x="210" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#111827">IP 20B</text>
+  <text x="310" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#111827">TCP 20B</text>
+  <text x="483" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#111827">Payload 580B</text>
+  <text x="630" y="585" font-family="Arial, sans-serif" font-size="16" fill="#374151">IP Packet Total: 620B</text>
+
+  <rect x="40" y="640" width="1120" height="82" rx="10" fill="#ecfeff" stroke="#0e7490"/>
+  <text x="60" y="676" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#0f172a">Summary</text>
+  <text x="60" y="704" font-family="Arial, sans-serif" font-size="17" fill="#1f2937">Total TCP/IP header overhead = 3 packets x 40B = 120B (IP layer total: 3620B)</text>
+</svg>

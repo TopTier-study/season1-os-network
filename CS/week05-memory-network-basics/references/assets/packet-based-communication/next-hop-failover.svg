@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#ffffff"/>
+
+  <text x="40" y="52" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#111827">Next Hop Routing: Normal Path vs Failover Path</text>
+  <text x="40" y="86" font-family="Arial, sans-serif" font-size="18" fill="#374151">라우터는 패킷마다 다음 홉(next hop)을 선택하고, 장애 시 다른 경로로 우회할 수 있다.</text>
+
+  <rect x="40" y="120" width="1120" height="250" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="156" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">1) Normal Path (평소 경로)</text>
+
+  <circle cx="160" cy="250" r="46" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"/>
+  <text x="160" y="257" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1e3a8a">A</text>
+
+  <circle cx="400" cy="250" r="46" fill="#e2e8f0" stroke="#334155" stroke-width="3"/>
+  <text x="400" y="257" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">R1</text>
+
+  <circle cx="640" cy="250" r="46" fill="#e2e8f0" stroke="#334155" stroke-width="3"/>
+  <text x="640" y="257" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">R2</text>
+
+  <circle cx="880" cy="250" r="46" fill="#e2e8f0" stroke="#334155" stroke-width="3"/>
+  <text x="880" y="257" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">R3</text>
+
+  <circle cx="1080" cy="250" r="46" fill="#dcfce7" stroke="#15803d" stroke-width="3"/>
+  <text x="1080" y="257" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#166534">B</text>
+
+  <line x1="206" y1="250" x2="354" y2="250" stroke="#2563eb" stroke-width="6"/>
+  <polygon points="354,250 338,240 338,260" fill="#2563eb"/>
+
+  <line x1="446" y1="250" x2="594" y2="250" stroke="#2563eb" stroke-width="6"/>
+  <polygon points="594,250 578,240 578,260" fill="#2563eb"/>
+
+  <line x1="686" y1="250" x2="1034" y2="250" stroke="#2563eb" stroke-width="6"/>
+  <polygon points="1034,250 1018,240 1018,260" fill="#2563eb"/>
+
+  <text x="540" y="302" font-family="Arial, sans-serif" font-size="18" fill="#1e3a8a">A → R1 → R2 → B</text>
+  <text x="540" y="330" font-family="Arial, sans-serif" font-size="16" fill="#475569">R1의 next hop(목적지 B)은 평소 R2</text>
+
+  <rect x="40" y="400" width="1120" height="250" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="436" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">2) Failover Path (R1-R2 링크 장애 후)</text>
+
+  <circle cx="160" cy="530" r="46" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"/>
+  <text x="160" y="537" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1e3a8a">A</text>
+
+  <circle cx="400" cy="530" r="46" fill="#e2e8f0" stroke="#334155" stroke-width="3"/>
+  <text x="400" y="537" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">R1</text>
+
+  <circle cx="640" cy="530" r="46" fill="#e2e8f0" stroke="#334155" stroke-width="3"/>
+  <text x="640" y="537" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">R2</text>
+
+  <circle cx="880" cy="530" r="46" fill="#e2e8f0" stroke="#334155" stroke-width="3"/>
+  <text x="880" y="537" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">R3</text>
+
+  <circle cx="1080" cy="530" r="46" fill="#dcfce7" stroke="#15803d" stroke-width="3"/>
+  <text x="1080" y="537" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#166534">B</text>
+
+  <line x1="206" y1="530" x2="354" y2="530" stroke="#2563eb" stroke-width="6"/>
+  <polygon points="354,530 338,520 338,540" fill="#2563eb"/>
+
+  <line x1="446" y1="530" x2="594" y2="530" stroke="#ef4444" stroke-width="6" stroke-dasharray="10,8"/>
+  <line x1="500" y1="502" x2="540" y2="558" stroke="#dc2626" stroke-width="6"/>
+  <line x1="540" y1="502" x2="500" y2="558" stroke="#dc2626" stroke-width="6"/>
+
+  <line x1="446" y1="530" x2="834" y2="530" stroke="#16a34a" stroke-width="6"/>
+  <polygon points="834,530 818,520 818,540" fill="#16a34a"/>
+
+  <line x1="926" y1="530" x2="1034" y2="530" stroke="#16a34a" stroke-width="6"/>
+  <polygon points="1034,530 1018,520 1018,540" fill="#16a34a"/>
+
+  <text x="530" y="582" font-family="Arial, sans-serif" font-size="18" fill="#166534">A → R1 → R3 → B</text>
+  <text x="530" y="610" font-family="Arial, sans-serif" font-size="16" fill="#475569">R1의 next hop이 R2에서 R3로 변경됨</text>
+</svg>

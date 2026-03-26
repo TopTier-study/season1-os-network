@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <rect width="1200" height="760" fill="#ffffff"/>
+
+  <text x="40" y="52" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#111827">Why Packet-Based? (Head-of-Line Blocking Comparison)</text>
+  <text x="40" y="84" font-family="Arial, sans-serif" font-size="19" fill="#374151">Common dataset: Flow A = 3500B bulk, Flow B = 200B control, Link = 1MB/s</text>
+
+  <rect x="40" y="118" width="1120" height="106" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="60" y="154" font-family="Arial, sans-serif" font-size="18" fill="#1f2937">Transmission time = bytes / (1MB/s). So 3500B = 3.5ms, 200B = 0.2ms.</text>
+  <text x="60" y="184" font-family="Arial, sans-serif" font-size="18" fill="#1f2937">A is split into 1500B + 1500B + 500B under packet switching.</text>
+
+  <text x="40" y="270" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#111827">Case 1) Message-level sending (no packet interleaving)</text>
+  <line x1="60" y1="310" x2="1140" y2="310" stroke="#94a3b8" stroke-width="2"/>
+  <rect x="60" y="286" width="945" height="48" fill="#93c5fd" stroke="#1d4ed8"/>
+  <text x="532" y="316" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#1e3a8a">Flow A: 3500B (0.0ms - 3.5ms)</text>
+  <rect x="1005" y="286" width="54" height="48" fill="#fca5a5" stroke="#b91c1c"/>
+  <text x="1032" y="316" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#7f1d1d">B</text>
+  <text x="60" y="352" font-family="Arial, sans-serif" font-size="17" fill="#374151">Flow B first byte starts at 3.5ms, completion at 3.7ms</text>
+
+  <text x="40" y="432" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#111827">Case 2) Packet switching (interleaving by packet)</text>
+  <line x1="60" y1="472" x2="1140" y2="472" stroke="#94a3b8" stroke-width="2"/>
+
+  <rect x="60" y="448" width="405" height="48" fill="#93c5fd" stroke="#1d4ed8"/>
+  <text x="262" y="478" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#1e3a8a">A1: 1500B (0.0-1.5ms)</text>
+
+  <rect x="465" y="448" width="54" height="48" fill="#fca5a5" stroke="#b91c1c"/>
+  <text x="492" y="478" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#7f1d1d">B:200B</text>
+
+  <rect x="519" y="448" width="405" height="48" fill="#93c5fd" stroke="#1d4ed8"/>
+  <text x="721" y="478" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#1e3a8a">A2: 1500B (1.7-3.2ms)</text>
+
+  <rect x="924" y="448" width="135" height="48" fill="#93c5fd" stroke="#1d4ed8"/>
+  <text x="991" y="478" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#1e3a8a">A3:500B</text>
+
+  <text x="60" y="514" font-family="Arial, sans-serif" font-size="17" fill="#374151">Flow B starts at 1.5ms, completion at 1.7ms (2.0ms earlier than Case 1)</text>
+
+  <rect x="40" y="562" width="1120" height="160" rx="12" fill="#ecfeff" stroke="#0e7490"/>
+  <text x="60" y="600" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#0f172a">Interpretation</text>
+  <text x="60" y="632" font-family="Arial, sans-serif" font-size="18" fill="#1f2937">- Packet switching reduces head-of-line blocking for short/urgent traffic.</text>
+  <text x="60" y="660" font-family="Arial, sans-serif" font-size="18" fill="#1f2937">- Total transmitted bytes are similar, but latency fairness improves for mixed workloads.</text>
+  <text x="60" y="688" font-family="Arial, sans-serif" font-size="18" fill="#1f2937">- This is the practical reason modern IP networks use packet-based multiplexing.</text>
+</svg>
