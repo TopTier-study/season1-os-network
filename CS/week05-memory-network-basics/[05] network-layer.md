@@ -128,8 +128,6 @@ Proxyman앱을 이용하여 발송되는 요청의 Raw값을 읽은 것이다. A
 
 이러한 코드는 어플리케이션 계층에서 발생하는 일이며 이 계층에서 다루는 데이터에 대해 해석을 위해 헤더(여기서는 HTTP 헤더)를 붙이는 모습이다. 
 
-<img width="1744" height="1390" alt="image" src="https://github.com/user-attachments/assets/657f03c4-eeb2-4600-8c54-435f0f130dfa" />
-
 위 이미지는 같은 코드를 Wireshark를 이용해 관측한 결과이다. 
 - Application Layer
 	- Hypertext Transfer Protocol을 열어보면 위에서 관측했던 URLSession 코드의 Raw값을 확인할 수 있다. (하단에서도 확인 가능)
