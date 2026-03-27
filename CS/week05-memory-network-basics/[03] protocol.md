@@ -299,3 +299,5 @@ Server → ???
 Computer Networking: A Top-Down Approach
 
 [프로토콜이란?| 네트워크프로토콜 정의](https://www.cloudflare.com/ko-kr/learning/network-layer/what-is-a-protocol/)
+
+[\[네트워크\] 프로토콜 종류](https://helloworld-88.tistory.com/146)
