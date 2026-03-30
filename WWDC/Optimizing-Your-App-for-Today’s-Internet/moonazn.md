@@ -10,10 +10,13 @@
 #### Network Link Conditioner
 : macOS 및 iOS 기기에서 **불리한 네트워킹 환경을 시뮬레이션**할 수 있는 도구
 
- ![](moonazn/IMG_1560.PNG)<!-- {"width":248} -->  ![](moonazn/IMG_1561.PNG)<!-- {"width":248} -->
+<img width="248" src="https://github.com/user-attachments/assets/65b03f5c-7e9e-4935-a531-8bc2bbea266e" />
+<img width="248" src="https://github.com/user-attachments/assets/02d5e27c-0d81-47cc-9a8c-d566d05f0616" />
+
 - 대역폭, 패킷 손실률, 지연 시간 등 상세 제어 가능
 
-![](moonazn/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202026-03-28%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%202.42.40.png)
+<img width="996" height="737" alt="스크린샷 2026-03-28 오후 2 42 40" src="https://github.com/user-attachments/assets/81ffd7a6-2139-4140-85a4-d9d704108cbe" />
+
 -> 항상 NLC를 실행 후 앱 빌드 및 테스트 권장
 
 #### WireShark
@@ -167,8 +170,10 @@
      - 클라이언트마다 서버로 통신하는 라운드트립 시간(RTT)이 모두 다르기 때문에 Timeout 시간도 다르게 설정해야 함.
      - **TCP**: SampleRTT 사용 -> 왕복 시간 예측
        - **패킷 재전송 시 동일한 시퀀스 번호**로 주기 때문에 서버가 보내준 ACK가 어떤 요청에 대한 것인지 판단할 수 없는 문제 발생 (**retransmission ambiguity** = 실제 값에 비해 SampleRTT가 길게 / 짧게 왜곡되며 문제 발생)
-       ![](moonazn/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202026-03-30%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%203.39.53.png)
+       <img width="595" height="279" alt="스크린샷 2026-03-30 오후 3 39 53" src="https://github.com/user-attachments/assets/88348e94-251e-4f42-beb2-3a8fe5b78068" />
+
        > https://tcpcc.systemsapproach.org/algorithm.html
+       
      - **QUIC**: **재전송 패킷도 새로운 번호 부여** -> 모호성 문제 해결
        - 서버에서 요청을 수행하는 데에 걸린 시간을 첨부하여 응답 -> 클라이언트의 정교한 RTT 계산 도움
        - TCP/IP보다 정확한 RTT 계산 방식을 통해 불필요한 패킷 재전송 방지 가능
