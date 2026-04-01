@@ -142,7 +142,7 @@ FIN은 “나는 더 이상 보낼 데이터가 없다”는 의미이며, ACK�
 3. Mac 터미널에서 에코 서버를 띄운 상태로 다음 명령을 실행한다.
    - `sudo tcpdump -i any port 9999 -nn -tttt`
 
-#### Swift 코드
+#### 1️⃣ Swift 코드
 
 1. `NWConnection` 인스턴스 생성
 2. `connection.start(queue:)` 호출 -> **3-way handshake 시작**
@@ -154,7 +154,7 @@ FIN은 “나는 더 이상 보낼 데이터가 없다”는 의미이며, ACK�
 7. 1초 후 `connection.cancel()` 실행 -> **4-way handshake 시작**
 8. `.cancelled` 콜백에서 완전한 연결 해제 확인
 
-#### 결과 확인
+#### 2️⃣ 결과 확인
 
 <img src="references/assets/tcp-handshake/basic-console.png" width="700"/>
 <img src="references/assets/tcp-handshake/basic-tcpdump.png" width="700"/>
@@ -188,7 +188,7 @@ FIN은 “나는 더 이상 보낼 데이터가 없다”는 의미이며, ACK�
 >
 > **이 내용을 확인하기 위해 원격 서버(구글의 HTTP 서버)와 연결을 해봤다.**  
 > 연결 설정과 해제만 관찰하기 위해 데이터 송수신 코드를 제외하고 실행해봤다.  
-> <img src="references/assets/tcp-handshake/remote-tcpdump.png" width="700"/>
+> <img src="references/assets/tcp-handshake/remote-tcpdump.png" width="700"/>  
 > 연결 설정에서 3-way handshake 후 **추가 ACK가 없는 것을 확인했다.**  
 > `[SEW]`의 S는 SYN이고, E와 W는 **ECN(Explicit Congestion Notification)** 관련 플래그다. 네트워크 혼잡 상황을 라우터가 패킷에 표시해주면 송수신자가 전송 속도를 조절할 수 있게 해주는 기능인데, 클라이언트가 "나 ECN 지원해"라고 알리는 플래그다. 로컬에서는 혼잡이 발생할 일이 없으니 안 붙었고, 실제 인터넷 통신에서 OS가 자동으로 켠 상황이다.
 >
@@ -215,7 +215,7 @@ FIN은 “나는 더 이상 보낼 데이터가 없다”는 의미이며, ACK�
 | 11 | 서버 → 클라이언트 | [F.] | 3876525598 | 4208666463 | FIN+ACK, 서버도 해제 요청 |
 | 12 | 클라이언트 → 서버 | [.] | — | 3876525599 | ACK, 서버 FIN 수신 확인 |
 
-#### 서버에서 먼저 연결 해제하는 상황
+#### 3️⃣ 서버에서 먼저 연결 해제하는 상황
 
 클라이언트가 FIN을 보내기 전 1초 대기하던 타이머의 시간을 10초로 변경했다.  
 이 코드를 실행한 뒤, 데이터 송수신이 끝나고 클라이언트가 FIN을 보내기 전 서버 터미널에서 `CTRL+C`를 눌러 서버를 종료했다.  
@@ -240,7 +240,7 @@ stateUpdateHandler에 `.failed`나 `.waiting` 같은 전이가 찍히지 않은 
 **receive를 계속 걸어두는 코드로 수정하고 난 뒤 다시 상황을 재현하니 다음처럼 서버의 FIN을 확인하는 로그**가 출력됐다.  
 <img src="references/assets/tcp-handshake/server-fin-console.png" width="700"/>
 
-#### 신기한 상황 발견
+#### 4️⃣ 신기한 상황 발견
 
 `connect()`를 호출하고, 해당 코드를 지운 후 `disconnect()`만 적은 채 실행해봤다.  
 Xcode 콘솔에서는 `🔵 cancel() 호출 — FIN 전송 시작`를 출력하고 연결 해제 완료가 확인되지 않았다.  
