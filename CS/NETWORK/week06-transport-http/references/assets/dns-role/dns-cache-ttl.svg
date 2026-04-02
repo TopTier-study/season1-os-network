@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="700" viewBox="0 0 1280 700">
+  <rect width="1280" height="700" fill="#ffffff"/>
+  <text x="40" y="56" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="32" font-weight="700" fill="#111827">DNS 캐싱과 TTL 동작</text>
+  <text x="40" y="92" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#374151">예시: api.example.com A 레코드, TTL=60초</text>
+
+  <rect x="40" y="130" width="1200" height="220" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="70" y="168" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">타임라인</text>
+
+  <line x1="120" y1="250" x2="1140" y2="250" stroke="#334155" stroke-width="4"/>
+  <line x1="120" y1="238" x2="120" y2="262" stroke="#334155" stroke-width="4"/>
+  <line x1="460" y1="238" x2="460" y2="262" stroke="#334155" stroke-width="4"/>
+  <line x1="800" y1="238" x2="800" y2="262" stroke="#334155" stroke-width="4"/>
+  <line x1="1140" y1="238" x2="1140" y2="262" stroke="#334155" stroke-width="4"/>
+
+  <text x="120" y="288" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="16" fill="#334155">t=0s</text>
+  <text x="460" y="288" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="16" fill="#334155">t=20s</text>
+  <text x="800" y="288" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="16" fill="#334155">t=60s</text>
+  <text x="1140" y="288" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="16" fill="#334155">t=80s</text>
+
+  <rect x="140" y="190" width="300" height="42" rx="8" fill="#86efac" stroke="#166534"/>
+  <text x="290" y="217" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="15" fill="#14532d">첫 질의: cache miss -> 재귀 조회 수행</text>
+
+  <rect x="480" y="190" width="300" height="42" rx="8" fill="#bfdbfe" stroke="#1d4ed8"/>
+  <text x="630" y="217" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="15" fill="#1e3a8a">두 번째 질의: cache hit (남은 TTL=40s)</text>
+
+  <rect x="820" y="190" width="300" height="42" rx="8" fill="#fecaca" stroke="#b91c1c"/>
+  <text x="970" y="217" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="15" fill="#7f1d1d">TTL 만료 -> 재조회 필요</text>
+
+  <rect x="40" y="380" width="1200" height="280" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="70" y="418" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">캐시 계층</text>
+
+  <rect x="80" y="450" width="250" height="70" rx="10" fill="#e0f2fe" stroke="#0369a1"/>
+  <text x="205" y="480" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#0c4a6e">브라우저/앱 캐시</text>
+  <text x="205" y="505" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="14" fill="#334155">짧은 수명</text>
+
+  <rect x="380" y="450" width="250" height="70" rx="10" fill="#dbeafe" stroke="#1d4ed8"/>
+  <text x="505" y="480" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#1e3a8a">OS Stub 캐시</text>
+  <text x="505" y="505" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="14" fill="#334155">기기 레벨</text>
+
+  <rect x="680" y="450" width="250" height="70" rx="10" fill="#fde68a" stroke="#a16207"/>
+  <text x="805" y="480" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#854d0e">재귀 리졸버 캐시</text>
+  <text x="805" y="505" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="14" fill="#334155">통신사/공용 DNS</text>
+
+  <rect x="980" y="450" width="220" height="70" rx="10" fill="#dcfce7" stroke="#15803d"/>
+  <text x="1090" y="480" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#166534">권한 DNS</text>
+  <text x="1090" y="505" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="14" fill="#334155">최종 원본 정보</text>
+
+  <line x1="330" y1="485" x2="380" y2="485" stroke="#334155" stroke-width="3"/>
+  <polygon points="380,485 366,477 366,493" fill="#334155"/>
+  <line x1="630" y1="485" x2="680" y2="485" stroke="#334155" stroke-width="3"/>
+  <polygon points="680,485 666,477 666,493" fill="#334155"/>
+  <line x1="930" y1="485" x2="980" y2="485" stroke="#334155" stroke-width="3"/>
+  <polygon points="980,485 966,477 966,493" fill="#334155"/>
+
+  <text x="80" y="560" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="17" fill="#1f2937">- TTL은 최신성(변경 반영 속도)과 조회 성능의 균형점이다.</text>
+  <text x="80" y="590" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="17" fill="#1f2937">- TTL이 짧으면 전파는 빠르지만 DNS 질의량과 지연이 증가할 수 있다.</text>
+  <text x="80" y="620" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="17" fill="#1f2937">- TTL이 길면 캐시 hit는 늘지만 장애 전환/레코드 변경 반영은 느려질 수 있다.</text>
+</svg>

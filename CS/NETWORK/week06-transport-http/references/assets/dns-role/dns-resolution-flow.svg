@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760">
+  <rect width="1280" height="760" fill="#ffffff"/>
+  <text x="40" y="56" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="32" font-weight="700" fill="#111827">DNS 조회 흐름 (재귀 해석)</text>
+  <text x="40" y="90" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#374151">example.com -> 93.184.216.34 (캐시 미스 기준)</text>
+
+  <rect x="60" y="140" width="180" height="70" rx="10" fill="#dbeafe" stroke="#1d4ed8"/>
+  <text x="150" y="183" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#1e3a8a">클라이언트</text>
+
+  <rect x="300" y="140" width="220" height="70" rx="10" fill="#e0f2fe" stroke="#0369a1"/>
+  <text x="410" y="183" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#0c4a6e">재귀 리졸버</text>
+
+  <rect x="600" y="140" width="140" height="70" rx="10" fill="#fef3c7" stroke="#b45309"/>
+  <text x="670" y="183" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#92400e">루트</text>
+
+  <rect x="810" y="140" width="140" height="70" rx="10" fill="#fde68a" stroke="#a16207"/>
+  <text x="880" y="183" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#854d0e">.com TLD</text>
+
+  <rect x="1020" y="140" width="200" height="70" rx="10" fill="#dcfce7" stroke="#15803d"/>
+  <text x="1120" y="183" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#166534">권한 DNS</text>
+
+  <line x1="240" y1="175" x2="300" y2="175" stroke="#1f2937" stroke-width="3"/>
+  <polygon points="300,175 286,167 286,183" fill="#1f2937"/>
+  <text x="270" y="158" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="14" fill="#374151">1) 질의</text>
+
+  <line x1="520" y1="175" x2="600" y2="175" stroke="#1f2937" stroke-width="3"/>
+  <polygon points="600,175 586,167 586,183" fill="#1f2937"/>
+  <text x="560" y="158" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="14" fill="#374151">2)</text>
+
+  <line x1="740" y1="175" x2="810" y2="175" stroke="#1f2937" stroke-width="3"/>
+  <polygon points="810,175 796,167 796,183" fill="#1f2937"/>
+  <text x="775" y="158" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="14" fill="#374151">3)</text>
+
+  <line x1="950" y1="175" x2="1020" y2="175" stroke="#1f2937" stroke-width="3"/>
+  <polygon points="1020,175 1006,167 1006,183" fill="#1f2937"/>
+  <text x="985" y="158" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="14" fill="#374151">4)</text>
+
+  <line x1="1020" y1="240" x2="520" y2="240" stroke="#059669" stroke-width="3"/>
+  <polygon points="520,240 534,232 534,248" fill="#059669"/>
+  <text x="770" y="225" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="14" fill="#065f46">5) A/AAAA 응답 + TTL</text>
+
+  <line x1="520" y1="280" x2="240" y2="280" stroke="#059669" stroke-width="3"/>
+  <polygon points="240,280 254,272 254,288" fill="#059669"/>
+  <text x="380" y="265" text-anchor="middle" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="14" fill="#065f46">6) 클라이언트로 IP 반환</text>
+
+  <rect x="60" y="340" width="1160" height="360" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="90" y="382" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="22" font-weight="700" fill="#111827">단계별 의미</text>
+
+  <text x="100" y="420" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#1f2937">1. 클라이언트(Stub Resolver)가 example.com의 A/AAAA를 질의</text>
+  <text x="100" y="452" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#1f2937">2. 재귀 리졸버가 Root DNS에 질의하고 .com TLD 정보를 받음</text>
+  <text x="100" y="484" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#1f2937">3. 재귀 리졸버가 .com TLD에 질의하고 권한 DNS 정보를 받음</text>
+  <text x="100" y="516" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#1f2937">4. 권한 DNS에 최종 질의해 IP와 TTL을 받음</text>
+  <text x="100" y="548" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#1f2937">5. 재귀 리졸버가 TTL 기준으로 캐시하고 클라이언트에 반환</text>
+  <text x="100" y="580" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#1f2937">6. 이후 요청은 캐시 hit 시 상위 조회 없이 빠르게 응답</text>
+
+  <rect x="90" y="616" width="1100" height="64" rx="10" fill="#ecfeff" stroke="#0e7490"/>
+  <text x="110" y="654" font-family="Apple SD Gothic Neo, Noto Sans KR, Arial, sans-serif" font-size="18" fill="#0f172a">핵심: DNS 지연은 캐시 미스와 상위 DNS 단계 조회 횟수의 영향을 크게 받는다.</text>
+</svg>
