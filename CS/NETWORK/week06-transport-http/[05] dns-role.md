@@ -158,15 +158,15 @@ ANSWER 섹션에서 TTL 값을 확인해 캐시 지속 시간을 해석
 
 #### 결과
 1. `.`(루트) 단계
-![alt text](<스크린샷 2026-04-02 오전 9.23.40.png>)
+![alt text](references/assets/dns-role/dig-trace-root-20260402-092340.png)
    - 루트 NS 목록(`a.root-servers.net` ~ `m.root-servers.net`)을 받음
    - 이후 `.com`을 담당하는 TLD 서버 정보로 이동
 2. `.com`(TLD) 단계
-![alt text](<스크린샷 2026-04-02 오전 9.25.29.png>)
+![alt text](references/assets/dns-role/dig-trace-tld-com-20260402-092529.png)
    - `a.gtld-servers.net` ~ `m.gtld-servers.net` 목록을 받음
    - `example.com`의 `NS`(권한 DNS)가 `hera.ns.cloudflare.com`, `elliott.ns.cloudflare.com`임을 확인
 3. `example.com` 권한 DNS 단계
-![alt text](<스크린샷 2026-04-02 오전 9.27.08.png>)
+![alt text](references/assets/dns-role/dig-trace-authoritative-20260402-092708.png)
    - 최종 `A` 레코드 `104.18.27.120`, `104.18.26.120` 반환
    - TTL은 `300`으로 확인
 
