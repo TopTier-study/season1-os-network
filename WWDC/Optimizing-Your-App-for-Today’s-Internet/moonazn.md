@@ -173,7 +173,6 @@
        <img width="595" height="279" alt="스크린샷 2026-03-30 오후 3 39 53" src="https://github.com/user-attachments/assets/88348e94-251e-4f42-beb2-3a8fe5b78068" />
 
        > https://tcpcc.systemsapproach.org/algorithm.html
-       
      - **QUIC**: **재전송 패킷도 새로운 번호 부여** -> 모호성 문제 해결
        - 서버에서 요청을 수행하는 데에 걸린 시간을 첨부하여 응답 -> 클라이언트의 정교한 RTT 계산 도움
        - TCP/IP보다 정확한 RTT 계산 방식을 통해 불필요한 패킷 재전송 방지 가능
@@ -197,7 +196,7 @@
 
 > 즉 드문 장애 상황을 위해 평소의 모든 요청에서 추가 round trip latency를 내는 셈이다.
 
-#### Apple의 최적화 방안
+#### Apple의 최적화 방안: DNS stale cache 전략
 **만료된 DNS 캐시를 먼저 활용 & 동시에 새 조회를 돌림.**
 (Apple은 Happy Eyeballs 알고리즘과 함께 사용 -> 느린 DNS + 느린 경로 문제 동시 완화)
 
@@ -385,14 +384,62 @@ iOS 12와 macOS Mojave에서 HTTP/2 Connection Coalescing이 추가됨.
 
 
 ## 3. 준비한 질문
-- Q1.
-- Q2.
-- Q3.
+### Latency와 RTT는 어떻게 다를까? 실제 앱에서 Latency에 영향을 주는 구성 요소가 무엇일까?
+- RTT: 요청 → 응답까지 한 번 왕복 시간
+* Latency: 실제 요청 처리 전까지의 전체 지연
 
-## 4. 토론 / 공유 내용 정리
-- 스터디 중 나온 논의
-- 관점 차이 / 흥미로운 의견
-- 새롭게 이해한 내용
+Latency 구성:
+* DNS 조회
+* TCP handshake
+* TLS handshake
+* 서버 응답 대기
+* HTTP 구조적 대기(HOL)
+
+### 요청을 여러 개로 나누는 것과 하나로 합치는 것의 trade-off?
+* 나누기: 유연성 ↑, latency ↑
+* 합치기: latency ↓, 데이터 크기 ↑
+
+### DNS stale cache 전략이 어떤 문제를 해결하고 어떤 리스크를 가질까?
+* 해결: 연결 시작 빠름 -> DNS lookup latency 감소
+* 리스크: 오래된 IP로 연결 가능 (만료 캐시로 연결 시)
+
+### URLSession의 connection reuse는 어떤 조건에서 깨질 수 있을까?
+* 다른 URLSession 객체 사용
+* 다른 host / 포트
+* 인증서 다름
+* HTTP/1.1 사용
+* connection idle timeout
+
+### 캐싱이 항상 성능을 개선하지 않는 이유?
+* 디스크 I/O 증가
+* 재사용 안 되는 데이터 낭비
+* 오래된 데이터 문제
+
+### 쿠키가 많아질 때 성능에 어떤 영향을 줄 수 있을까?
+* 요청 헤더 크기 증가
+* 모든 요청에 자동 포함됨
+* 네트워크 비용 증가
+
+### 모바일 앱에서 네트워크 요청을 최대한 줄이는 전략이 항상 좋은 선택일까? 이유는?
+항상 X
+* 데이터 크기 커질 수 있음
+* 불필요한 데이터 포함 가능
+
+-> 적절히 줄이는 게 중요하다
+
+### 캐싱 전략은 클라? 서버? 어디가 더 좋을까?
+- 서버: 일관성 관리, 정책 통제
+- 클라: latency 감소
+
+-> 권장: 서버 정책 + 클라 캐시 함께 사용
+
+### HTTP/2를 사용하고 있음에도 앱이 느리다면 어디를 의심해야 할까?
+* 서버 성능 문제
+* 네트워크 상태 (RTT, packet loss)
+* TCP HOL blocking
+* 요청 수 과다
+* 캐싱 없음
+* DNS 문제
 
 ## 5. 의문 / 추가 탐구 포인트
 - 더 알아보고 싶은 내용
